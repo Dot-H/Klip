@@ -4,6 +4,20 @@ import type { inferProcedureInput } from '@trpc/server';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import type { AppRouter } from '~/server/routers/_app';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  TextField,
+  Paper,
+  Divider,
+  CircularProgress,
+  Alert,
+  Stack,
+} from '@mui/material';
+import { Add as AddIcon, Visibility as ViewIcon } from '@mui/icons-material';
 
 const IndexPage: NextPageWithLayout = () => {
   const utils = trpc.useUtils();
@@ -34,126 +48,184 @@ const IndexPage: NextPageWithLayout = () => {
   // }, [postsQuery.data, utils]);
 
   return (
-    <div className="flex flex-col bg-gray-800 py-8">
-      <h1 className="text-4xl font-bold">
-        Welcome to your tRPC with Prisma starter!
-      </h1>
-      <p className="text-gray-400">
-        If you get stuck, check{' '}
-        <Link className="underline" href="https://trpc.io">
-          the docs
-        </Link>
-        , write a message in our{' '}
-        <Link className="underline" href="https://trpc.io/discord">
-          Discord-channel
-        </Link>
-        , or write a message in{' '}
-        <Link
-          className="underline"
-          href="https://github.com/trpc/trpc/discussions"
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Header Section */}
+      <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          Welcome to Klip! 🧗‍♂️
+        </Typography>
+        <Typography variant="body1" color="text.secondary" paragraph>
+          Track your climbing routes and maintenance with ease.
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          If you get stuck, check{' '}
+          <Link
+            href="https://trpc.io"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            the tRPC docs
+          </Link>
+          , write a message in our{' '}
+          <Link
+            href="https://trpc.io/discord"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Discord channel
+          </Link>
+          , or write a message in{' '}
+          <Link
+            href="https://github.com/trpc/trpc/discussions"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub Discussions
+          </Link>
+          .
+        </Typography>
+      </Paper>
+
+      {/* Posts Section */}
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
         >
-          GitHub Discussions
-        </Link>
-        .
-      </p>
+          <Typography variant="h4" component="h2">
+            Latest Posts
+            {postsQuery.status === 'pending' && (
+              <CircularProgress size={20} sx={{ ml: 2 }} />
+            )}
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => postsQuery.fetchNextPage()}
+            disabled={!postsQuery.hasNextPage || postsQuery.isFetchingNextPage}
+            startIcon={
+              postsQuery.isFetchingNextPage ? (
+                <CircularProgress size={16} />
+              ) : null
+            }
+          >
+            {postsQuery.isFetchingNextPage
+              ? 'Loading more...'
+              : postsQuery.hasNextPage
+                ? 'Load More'
+                : 'Nothing more to load'}
+          </Button>
+        </Box>
 
-      <div className="flex flex-col py-8 items-start gap-y-2">
-        <div className="flex flex-col"></div>
-        <h2 className="text-3xl font-semibold">
-          Latest Posts
-          {postsQuery.status === 'pending' && '(loading)'}
-        </h2>
+        <Stack spacing={2}>
+          {postsQuery.data?.pages.map((page, index) => (
+            <Fragment key={page.items[0]?.id || index}>
+              {page.items.map((item) => (
+                <Card key={item.id} variant="outlined">
+                  <CardContent>
+                    <Typography variant="h6" component="h3" gutterBottom>
+                      {item.title}
+                    </Typography>
+                    <Button
+                      component={Link}
+                      href={`/post/${item.id}`}
+                      variant="text"
+                      startIcon={<ViewIcon />}
+                    >
+                      View more
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </Fragment>
+          ))}
+        </Stack>
+      </Paper>
 
-        <button
-          className="bg-gray-900 p-2 rounded-md font-semibold disabled:bg-gray-700 disabled:text-gray-400"
-          onClick={() => postsQuery.fetchNextPage()}
-          disabled={!postsQuery.hasNextPage || postsQuery.isFetchingNextPage}
+      <Divider />
+
+      {/* Add Post Section */}
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
+          sx={{ textAlign: 'center' }}
         >
-          {postsQuery.isFetchingNextPage
-            ? 'Loading more...'
-            : postsQuery.hasNextPage
-              ? 'Load More'
-              : 'Nothing more to load'}
-        </button>
+          Add a New Post
+        </Typography>
 
-        {postsQuery.data?.pages.map((page, index) => (
-          <Fragment key={page.items[0]?.id || index}>
-            {page.items.map((item) => (
-              <article key={item.id}>
-                <h3 className="text-2xl font-semibold">{item.title}</h3>
-                <Link className="text-gray-400" href={`/post/${item.id}`}>
-                  View more
-                </Link>
-              </article>
-            ))}
-          </Fragment>
-        ))}
-      </div>
-
-      <hr />
-
-      <div className="flex flex-col py-8 items-center">
-        <h2 className="text-3xl font-semibold pb-2">Add a Post</h2>
-
-        <form
-          className="py-2 w-4/6"
+        <Box
+          component="form"
           onSubmit={async (e) => {
-            /**
-             * In a real app you probably don't want to use this manually
-             * Checkout React Hook Form - it works great with tRPC
-             * @see https://react-hook-form.com/
-             * @see https://kitchen-sink.trpc.io/react-hook-form
-             */
             e.preventDefault();
             const $form = e.currentTarget;
             const values = Object.fromEntries(new FormData($form));
             type Input = inferProcedureInput<AppRouter['post']['add']>;
-            //    ^?
             const input: Input = {
               title: values.title as string,
               text: values.text as string,
             };
             try {
               await addPost.mutateAsync(input);
-
               $form.reset();
             } catch (cause) {
               console.error({ cause }, 'Failed to add post');
             }
           }}
+          sx={{ maxWidth: 600, mx: 'auto' }}
         >
-          <div className="flex flex-col gap-y-4 font-semibold">
-            <input
-              className="focus-visible:outline-dashed outline-offset-4 outline-2 outline-gray-700 rounded-xl px-4 py-3 bg-gray-900"
+          <Stack spacing={3}>
+            <TextField
               id="title"
               name="title"
-              type="text"
-              placeholder="Title"
+              label="Title"
+              placeholder="Enter post title"
               disabled={addPost.isPending}
+              fullWidth
+              required
             />
-            <textarea
-              className="resize-none focus-visible:outline-dashed outline-offset-4 outline-2 outline-gray-700 rounded-xl px-4 py-3 bg-gray-900"
+            <TextField
               id="text"
               name="text"
-              placeholder="Text"
+              label="Content"
+              placeholder="Enter post content"
               disabled={addPost.isPending}
+              multiline
               rows={6}
+              fullWidth
+              required
             />
 
-            <div className="flex justify-center">
-              <input
-                className="cursor-pointer bg-gray-900 p-2 rounded-md px-16"
+            <Box sx={{ textAlign: 'center' }}>
+              <Button
                 type="submit"
+                variant="contained"
+                size="large"
                 disabled={addPost.isPending}
-              />
-              {addPost.error && (
-                <p style={{ color: 'red' }}>{addPost.error.message}</p>
-              )}
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+                startIcon={
+                  addPost.isPending ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <AddIcon />
+                  )
+                }
+                sx={{ minWidth: 200 }}
+              >
+                {addPost.isPending ? 'Adding...' : 'Add Post'}
+              </Button>
+            </Box>
+
+            {addPost.error && (
+              <Alert severity="error">{addPost.error.message}</Alert>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

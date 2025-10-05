@@ -1,12 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Global styles for Material-UI */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
 
-@layer base {
-  body {
-    height: 100vh;
-    background-color: rgb(31 41 55);
-    color: #fff;
-    padding: 0 32px;
-  }
+#__next {
+  height: 100%;
+}
+
+/* Remove default margins and paddings */
+* {
+  box-sizing: border-box;
 }
