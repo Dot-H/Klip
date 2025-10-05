@@ -1,30 +1,12 @@
-'use client';
-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Skeleton,
-  Alert,
-  Divider,
-} from '@mui/material';
+import { Box, Typography, Paper, Button, Divider } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { getPost, type Post } from '~/lib/data';
 
-interface Post {
-  id: string;
-  title: string;
-  text: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-function PostItem(props: { post: Post }) {
+export function PostItem(props: { post: Post }) {
   const { post } = props;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Button
@@ -71,53 +53,18 @@ function PostItem(props: { post: Post }) {
   );
 }
 
-export default function PostViewPage() {
-  const params = useParams();
-  const id = params.id as string;
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function PostViewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/posts/${id}`);
-        if (res.status === 404) {
-          notFound();
-        }
-        if (!res.ok) {
-          throw new Error(`Failed to fetch post: ${res.statusText}`);
-        }
-        const data: Post = await res.json();
-        setPost(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPost();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Skeleton variant="rectangular" height={40} width={120} />
-        <Skeleton variant="text" height={60} />
-        <Skeleton variant="text" height={20} />
-        <Skeleton variant="rectangular" height={200} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  // Fetch post directly in the server component
+  const post = await getPost(id);
 
   if (!post) {
-    return null; // Should ideally not happen if notFound is called for 404
+    notFound();
   }
 
   return <PostItem post={post} />;
