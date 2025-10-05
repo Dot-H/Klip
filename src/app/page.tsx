@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { Visibility as ViewIcon } from '@mui/icons-material';
 import { getPosts, type PostsResponse } from '~/lib/data';
-import { AddPostForm } from '~/components/AddPostForm';
+import { AddPostForm } from '~/components/Posts/AddPostForm';
 
 export default async function HomePage() {
   // Fetch posts directly in the server component

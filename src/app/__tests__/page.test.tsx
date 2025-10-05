@@ -2,7 +2,7 @@
  * Integration tests for the home page
  */
 import { render, screen } from '@testing-library/react';
-import { AddPostForm } from '~/components/AddPostForm';
+import { AddPostForm } from '~/components/Posts/AddPostForm';
 
 // Mock Next.js router for client components
 jest.mock('next/navigation', () => ({

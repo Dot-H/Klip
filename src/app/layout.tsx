@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { MUIProvider } from './providers/mui-provider';
 import { DefaultLayout } from '~/components/DefaultLayout';
 import '~/styles/globals.css';
+import KlipAppBar from '~/components/AppBar/KlipAppBar';
 
 export const metadata: Metadata = {
   title: 'Klip - Climbing Route Tracker',
@@ -17,7 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <MUIProvider>
-          <DefaultLayout>{children}</DefaultLayout>
+          <DefaultLayout>
+            <KlipAppBar />
+            {children}
+          </DefaultLayout>
         </MUIProvider>
       </body>
     </html>
