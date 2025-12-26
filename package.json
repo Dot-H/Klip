@@ -24,9 +24,6 @@
     "postinstall": "pnpm generate",
     "typecheck": "tsc --noEmit"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "prettier": {
     "printWidth": 80,
     "trailingComma": "all",

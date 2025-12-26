@@ -10,14 +10,101 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id    String @id @default(uuid())
-  title String
-  text  String
+model User {
+  id        String @id @default(uuid())
+  firstname String
+  lastname  String
+  email     String @unique
+  roleFlags Int    @map("role_flags")
 
-  // To return `Date`s intact through the API we use transformers
-  // https://trpc.io/docs/v11/data-transformers
-  // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  // Relations
+  coordinators Coordinator[]
+  reports      Report[]
+
+  @@map("users")
+}
+
+model Coordinator {
+  userId String @map("user_id")
+  cragId String @map("crag_id")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  crag Crag @relation(fields: [cragId], references: [id], onDelete: Cascade)
+
+  @@id([userId, cragId])
+  @@map("coordinators")
+}
+
+model Crag {
+  id         String   @id @default(uuid())
+  name       String
+  convention Boolean?
+
+  // Relations
+  coordinators Coordinator[]
+  sectors      Sector[]
+
+  @@map("crags")
+}
+
+model Sector {
+  id          String  @id @default(uuid())
+  cragId      String  @map("crag_id")
+  name        String
+  geolocFlags String? @map("geoloc_flags")
+
+  // Relations
+  crag   Crag    @relation(fields: [cragId], references: [id], onDelete: Cascade)
+  routes Route[]
+
+  @@map("sectors")
+}
+
+model Route {
+  id          String @id @default(uuid())
+  sectorId    String @map("sector_id")
+  number      Int
+  name        String?
+  description String?
+  orientation Int?   @db.SmallInt
+
+  // Relations
+  sector Sector  @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  pitches Pitch[]
+
+  @@map("routes")
+}
+
+model Pitch {
+  id          String  @id @default(uuid())
+  routeId     String  @map("route_id")
+  description String?
+  length      Int?
+  nbBolts     Int?    @map("nb_bolts")
+
+  // Relations
+  route   Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  reports Report[]
+
+  @@map("pitches")
+}
+
+model Report {
+  id                  String   @id @default(uuid())
+  reportedPitchId     String   @map("reported_pitch_id")
+  reporterId          String   @map("reporter_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  comment             String?
+  visualCheck         Boolean? @map("visual_check")
+  anchorCheck         Boolean? @map("anchor_check")
+  cleaningDone        Boolean? @map("cleaning_done")
+  trundleDone         Boolean? @map("trundle_done")
+  totalReboltingDone  Boolean? @map("total_rebolting_done")
+
+  // Relations
+  pitch    Pitch @relation(fields: [reportedPitchId], references: [id], onDelete: Cascade)
+  reporter User  @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
 }
