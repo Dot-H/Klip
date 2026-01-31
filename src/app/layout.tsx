@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import { MUIProvider } from './providers/mui-provider';
 import { DefaultLayout } from '~/components/DefaultLayout';
 import '~/styles/globals.css';
-import KlipAppBar from '~/components/AppBar/KlipAppBar';
 
 export const metadata: Metadata = {
-  title: 'Klip - Climbing Route Tracker',
-  description: 'Track your climbing routes and maintenance with ease',
+  title: 'Klip - Maintenance des voies d\'escalade',
+  description: 'Site de contrôle et de maintenance des voies d\'escalade',
 };
 
 export default function RootLayout({
@@ -15,13 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body>
         <MUIProvider>
-          <DefaultLayout>
-            <KlipAppBar />
-            {children}
-          </DefaultLayout>
+          <DefaultLayout>{children}</DefaultLayout>
         </MUIProvider>
       </body>
     </html>

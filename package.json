@@ -6,6 +6,7 @@
     "prisma-studio": "prisma studio",
     "db-seed": "prisma db seed",
     "db-reset": "prisma migrate dev reset",
+    "db-import": "tsx prisma/import-excel.ts",
     "dx:next": "run-s migrate-dev db-seed && next dev",
     "dx:prisma-studio": "pnpm prisma-studio",
     "dx": "run-p dx:* --print-label",
@@ -23,6 +24,9 @@
     "test-start": "run-s test test-e2e",
     "postinstall": "pnpm generate",
     "typecheck": "tsc --noEmit"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "prettier": {
     "printWidth": 80,
@@ -45,6 +49,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "superjson": "^1.12.4",
+    "xlsx": "^0.18.5",
     "zod": "^3.25.51"
   },
   "devDependencies": {

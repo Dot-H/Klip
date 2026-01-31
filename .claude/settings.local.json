@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__executeCode",
+      "Bash(python3:*)",
+      "Bash(pnpm install:*)",
+      "Bash(node -e:*)",
+      "Bash(pnpm db-import:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pkill:*)",
+      "Bash(tree:*)"
+    ]
+  }
+}
