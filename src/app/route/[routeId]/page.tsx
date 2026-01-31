@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Box, Typography, Button, Stack, Paper, Divider } from '@mui/material';
+import { Box, Typography, Stack, Paper, Divider } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { getRouteWithReports } from '~/lib/data';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { ReportCard } from '~/components/Report/ReportCard';
+import { LinkButton } from '~/components/common/LinkButton';
 
 interface RoutePageProps {
   params: Promise<{ routeId: string }>;
@@ -62,14 +62,13 @@ export default async function RoutePage({ params }: RoutePageProps) {
         </Box>
 
         {firstPitchId && (
-          <Button
-            component={Link}
+          <LinkButton
             href={`/route/${route.id}/report?pitchId=${firstPitchId}`}
             variant="contained"
             startIcon={<AddIcon />}
           >
             Nouveau rapport
-          </Button>
+          </LinkButton>
         )}
       </Stack>
 
@@ -80,15 +79,14 @@ export default async function RoutePage({ params }: RoutePageProps) {
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {route.pitches.map((pitch, index) => (
-              <Button
+              <LinkButton
                 key={pitch.id}
-                component={Link}
                 href={`/route/${route.id}/report?pitchId=${pitch.id}`}
                 variant="outlined"
                 size="small"
               >
                 L{index + 1}
-              </Button>
+              </LinkButton>
             ))}
           </Stack>
         </Paper>

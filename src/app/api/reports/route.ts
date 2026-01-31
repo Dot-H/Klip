@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createReport } from '~/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 const reportSchema = z.object({
   pitchId: z.string().uuid('ID de longueur invalide'),
   firstname: z.string().min(1, 'Le prénom est requis'),

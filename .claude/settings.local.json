@@ -9,7 +9,22 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm build:*)",
       "Bash(pkill:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm install -g vercel)",
+      "Bash(vercel --help:*)",
+      "Bash(pnpm next build:*)",
+      "Bash(timeout 15 pnpm next dev:*)",
+      "Bash(pnpm migrate-dev:*)",
+      "Bash(pnpm prisma db push:*)",
+      "Bash(source:*)",
+      "Bash(psql:*)",
+      "Bash(pnpm prisma migrate reset:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" pnpm prisma migrate reset:*)",
+      "Bash(pnpm tsx:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_7rsM9jEztRaX@ep-super-tree-ag24qzic-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require\" pnpm tsx:*)",
+      "Bash(head:*)"
     ]
   }
 }
