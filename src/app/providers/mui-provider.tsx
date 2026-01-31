@@ -2,6 +2,7 @@
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { EmotionCacheProvider } from './emotion-cache';
 
 const theme = createTheme({
   palette: {
@@ -84,9 +85,11 @@ const theme = createTheme({
 
 export function MUIProvider({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <EmotionCacheProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    </EmotionCacheProvider>
   );
 }
