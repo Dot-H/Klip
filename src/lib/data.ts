@@ -90,6 +90,18 @@ export interface CreateReportInput {
   comment?: string;
 }
 
+export interface CreateReportWithAuthInput {
+  pitchId: string;
+  userEmail: string;
+  userName?: string;
+  visualCheck?: boolean;
+  anchorCheck?: boolean;
+  cleaningDone?: boolean;
+  trundleDone?: boolean;
+  totalReboltingDone?: boolean;
+  comment?: string;
+}
+
 // ============ Functions ============
 
 /**
@@ -316,4 +328,53 @@ export async function getPitch(pitchId: string) {
       },
     },
   });
+}
+
+/**
+ * Create a report with Neon Auth session data
+ * Upserts user by email from auth provider
+ */
+export async function createReportWithAuth(
+  input: CreateReportWithAuthInput,
+): Promise<string> {
+  // Parse name into firstname/lastname if provided
+  let firstname = '';
+  let lastname = '';
+
+  if (input.userName) {
+    const nameParts = input.userName.trim().split(/\s+/);
+    firstname = nameParts[0] || '';
+    lastname = nameParts.slice(1).join(' ') || '';
+  }
+
+  // Upsert user by email from auth provider
+  const user = await prisma.user.upsert({
+    where: { email: input.userEmail },
+    update: {
+      ...(firstname && { firstname }),
+      ...(lastname && { lastname }),
+    },
+    create: {
+      email: input.userEmail,
+      firstname,
+      lastname,
+      roleFlags: 0,
+    },
+  });
+
+  // Create report
+  const report = await prisma.report.create({
+    data: {
+      reportedPitchId: input.pitchId,
+      reporterId: user.id,
+      visualCheck: input.visualCheck ?? null,
+      anchorCheck: input.anchorCheck ?? null,
+      cleaningDone: input.cleaningDone ?? null,
+      trundleDone: input.trundleDone ?? null,
+      totalReboltingDone: input.totalReboltingDone ?? null,
+      comment: input.comment ?? null,
+    },
+  });
+
+  return report.id;
 }

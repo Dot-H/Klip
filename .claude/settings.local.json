@@ -24,7 +24,13 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" pnpm prisma migrate reset:*)",
       "Bash(pnpm tsx:*)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_7rsM9jEztRaX@ep-super-tree-ag24qzic-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require\" pnpm tsx:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "WebSearch",
+      "Bash(ls:*)",
+      "WebFetch(domain:neon.com)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(timeout 10 pnpm dev:*)"
     ]
   }
 }

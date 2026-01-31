@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { AppBar, Toolbar, Typography, Box } from '@mui/material';
 import TerrainIcon from '@mui/icons-material/Terrain';
 import { SearchBar } from './SearchBar';
+import { UserMenu } from '~/components/Auth/UserMenu';
 
 export function KlipAppBar() {
   return (
@@ -48,6 +49,10 @@ export function KlipAppBar() {
         <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }} />
 
         <SearchBar />
+
+        <Box sx={{ ml: 2 }}>
+          <UserMenu />
+        </Box>
       </Toolbar>
     </AppBar>
   );

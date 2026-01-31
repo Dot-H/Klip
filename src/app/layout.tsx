@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { MUIProvider } from './providers/mui-provider';
+import { NeonAuthProvider } from './providers/neon-auth-provider';
 import { DefaultLayout } from '~/components/DefaultLayout';
 import '~/styles/globals.css';
 
@@ -14,11 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body>
-        <MUIProvider>
-          <DefaultLayout>{children}</DefaultLayout>
-        </MUIProvider>
+        <NeonAuthProvider>
+          <MUIProvider>
+            <DefaultLayout>{children}</DefaultLayout>
+          </MUIProvider>
+        </NeonAuthProvider>
       </body>
     </html>
   );

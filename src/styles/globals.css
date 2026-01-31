@@ -1,3 +1,6 @@
+/* Neon Auth UI styles */
+@import '@neondatabase/neon-js/ui/css';
+
 /* Global styles for Material-UI */
 html, body {
   height: 100%;

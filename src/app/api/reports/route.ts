@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createReport } from '~/lib/data';
+import { auth } from '~/lib/auth/server';
+import { createReportWithAuth } from '~/lib/data';
 
 export const dynamic = 'force-dynamic';
 
 const reportSchema = z.object({
   pitchId: z.string().uuid('ID de longueur invalide'),
-  firstname: z.string().min(1, 'Le prénom est requis'),
-  lastname: z.string().min(1, 'Le nom est requis'),
-  email: z.string().email('Email invalide'),
   visualCheck: z.boolean().optional(),
   anchorCheck: z.boolean().optional(),
   cleaningDone: z.boolean().optional(),
@@ -19,10 +17,24 @@ const reportSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Verify authentication
+    const { data: session } = await auth.getSession();
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Authentification requise' },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     const validatedData = reportSchema.parse(body);
 
-    const reportId = await createReport(validatedData);
+    const reportId = await createReportWithAuth({
+      ...validatedData,
+      userEmail: session.user.email,
+      userName: session.user.name || undefined,
+    });
 
     return NextResponse.json({ id: reportId }, { status: 201 });
   } catch (error) {

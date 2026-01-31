@@ -38,6 +38,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@neondatabase/neon-js": "0.2.0-beta.1",
     "@prisma/client": "^6.7.0",
     "@tanstack/react-query": "^5.80.3",
     "@trpc/client": "npm:@trpc/client",
