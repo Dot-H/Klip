@@ -23,6 +23,7 @@ export interface SectorWithRoutes {
     number: number;
     name: string | null;
     length: number | null;
+    pitches: { length: number | null; cotation: string | null }[];
   }[];
 }
 
@@ -152,6 +153,9 @@ export async function getCragWithRoutes(
               number: true,
               name: true,
               length: true,
+              pitches: {
+                select: { length: true, cotation: true },
+              },
             },
           },
         },

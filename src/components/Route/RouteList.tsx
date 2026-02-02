@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { SectorWithRoutes } from '~/lib/data';
+import { getMaxCotation } from '~/lib/grades';
 
 interface RouteListProps {
   sector: SectorWithRoutes;
@@ -35,36 +36,52 @@ export function RouteList({ sector }: RouteListProps) {
         {sector.name}
       </Typography>
       <List disablePadding>
-        {sector.routes.map((route, index) => (
-          <ListItem
-            key={route.id}
-            disablePadding
-            divider={index < sector.routes.length - 1}
-          >
-            <ListItemButton component={Link} href={`/route/${route.id}`}>
-              <ListItemText
-                primary={
-                  <>
-                    {route.name
-                      ? `${route.number}. ${route.name}`
-                      : `Voie ${route.number}`}
-                    {route.length != null && (
+        {sector.routes.map((route, index) => {
+          const allPitchesHaveLength = route.pitches.every((p) => p.length != null);
+          const computedLength = allPitchesHaveLength
+            ? route.pitches.reduce((sum, p) => sum + (p.length ?? 0), 0)
+            : null;
+          const totalLength = route.length ?? computedLength;
+          const maxCotation = getMaxCotation(route.pitches);
+          const allPitchesHaveCotation = route.pitches.every((p) => p.cotation != null);
+
+          return (
+            <ListItem
+              key={route.id}
+              disablePadding
+              divider={index < sector.routes.length - 1}
+            >
+              <ListItemButton component={Link} href={`/route/${route.id}`}>
+                <ListItemText
+                  primary={
+                    <>
+                      {route.name
+                        ? `${route.number}. ${route.name}`
+                        : `Voie ${route.number}`}
                       <Typography
                         component="span"
                         variant="body2"
-                        color="text.secondary"
+                        color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
                         sx={{ ml: 1 }}
                       >
-                        {route.length}m
+                        {maxCotation ?? 'Cotation?'}
                       </Typography>
-                    )}
-                  </>
-                }
-              />
-              <ChevronRightIcon color="action" />
-            </ListItemButton>
-          </ListItem>
-        ))}
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color={totalLength != null ? 'text.secondary' : 'warning.main'}
+                        sx={{ ml: 1 }}
+                      >
+                        {totalLength != null ? `${totalLength}m` : '?m'}
+                      </Typography>
+                    </>
+                  }
+                />
+                <ChevronRightIcon color="action" />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </Paper>
   );
