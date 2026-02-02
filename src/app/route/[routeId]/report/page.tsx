@@ -62,7 +62,11 @@ export default async function ReportPage({
         {routeName} • {route.sector.name} • {route.sector.crag.name}
       </Typography>
 
-      <ReportForm pitchId={pitchId} routeId={routeId} />
+      <ReportForm
+        pitchId={pitchId}
+        routeId={routeId}
+        pitches={route.pitches}
+      />
     </Box>
   );
 }

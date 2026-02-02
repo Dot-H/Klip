@@ -6,7 +6,7 @@ import { createReportWithAuth } from '~/lib/data';
 export const dynamic = 'force-dynamic';
 
 const reportSchema = z.object({
-  pitchId: z.string().uuid('ID de longueur invalide'),
+  pitchIds: z.array(z.string().min(1, 'ID de longueur invalide')).min(1, 'Sélectionnez au moins une longueur'),
   visualCheck: z.boolean().optional(),
   anchorCheck: z.boolean().optional(),
   cleaningDone: z.boolean().optional(),
@@ -28,15 +28,21 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = reportSchema.parse(body);
+    const { pitchIds, ...reportData } = reportSchema.parse(body);
 
-    const reportId = await createReportWithAuth({
-      ...validatedData,
-      userEmail: session.user.email,
-      userName: session.user.name || undefined,
-    });
+    // Create a report for each selected pitch
+    const reportIds = await Promise.all(
+      pitchIds.map((pitchId) =>
+        createReportWithAuth({
+          ...reportData,
+          pitchId,
+          userEmail: session.user.email,
+          userName: session.user.name || undefined,
+        }),
+      ),
+    );
 
-    return NextResponse.json({ id: reportId }, { status: 201 });
+    return NextResponse.json({ ids: reportIds }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

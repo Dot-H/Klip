@@ -10,6 +10,7 @@ type Report = PitchWithReports['reports'][number];
 
 interface ReportCardProps {
   report: Report;
+  pitchNumber?: number;
 }
 
 function formatDate(date: Date): string {
@@ -20,7 +21,7 @@ function formatDate(date: Date): string {
   }).format(new Date(date));
 }
 
-export function ReportCard({ report }: ReportCardProps) {
+export function ReportCard({ report, pitchNumber }: ReportCardProps) {
   const checks = [
     { done: report.visualCheck, label: 'Contrôle visuel', icon: VisibilityIcon },
     { done: report.anchorCheck, label: 'Ancrages vérifiés', icon: AnchorIcon },
@@ -52,9 +53,14 @@ export function ReportCard({ report }: ReportCardProps) {
             mb: 2,
           }}
         >
-          <Typography variant="subtitle1" fontWeight={600}>
-            {report.reporter.firstname} {report.reporter.lastname}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600}>
+              {report.reporter.firstname} {report.reporter.lastname}
+            </Typography>
+            {pitchNumber && (
+              <Chip label={`L${pitchNumber}`} size="small" variant="outlined" />
+            )}
+          </Box>
           <Typography variant="body2" color="text.secondary">
             {formatDate(report.createdAt)}
           </Typography>

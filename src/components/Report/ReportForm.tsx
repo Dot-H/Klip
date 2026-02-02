@@ -14,6 +14,8 @@ import {
   Alert,
   CircularProgress,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
@@ -22,17 +24,25 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
 
+interface Pitch {
+  id: string;
+  cotation: string | null;
+  length: number | null;
+}
+
 interface ReportFormProps {
   pitchId: string;
   routeId: string;
+  pitches: Pitch[];
 }
 
-export function ReportForm({ pitchId, routeId }: ReportFormProps) {
+export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [selectedPitchIds, setSelectedPitchIds] = useState<string[]>([pitchId]);
 
   const [formData, setFormData] = useState({
     visualCheck: false,
@@ -68,7 +78,7 @@ export function ReportForm({ pitchId, routeId }: ReportFormProps) {
       const response = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, pitchId }),
+        body: JSON.stringify({ ...formData, pitchIds: selectedPitchIds }),
       });
 
       if (!response.ok) {
@@ -148,6 +158,43 @@ export function ReportForm({ pitchId, routeId }: ReportFormProps) {
               </Button>
             )}
           </Box>
+
+          {pitches.length > 1 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Longueurs concernées
+              </Typography>
+              <ToggleButtonGroup
+                value={selectedPitchIds}
+                onChange={(_, value: string[]) => value.length > 0 && setSelectedPitchIds(value)}
+                sx={{ mb: 4, flexWrap: 'wrap' }}
+              >
+                {pitches.map((pitch, index) => {
+                  const details = [pitch.cotation, pitch.length != null ? `${pitch.length}m` : null]
+                    .filter(Boolean)
+                    .join(', ');
+                  return (
+                    <ToggleButton
+                      key={pitch.id}
+                      value={pitch.id}
+                      sx={{
+                        '&.Mui-selected': {
+                          bgcolor: 'primary.100',
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            bgcolor: 'primary.200',
+                          },
+                        },
+                      }}
+                    >
+                      L{index + 1}{details && ` (${details})`}
+                    </ToggleButton>
+                  );
+                })}
+              </ToggleButtonGroup>
+            </>
+          )}
 
           <Typography variant="h6" gutterBottom>
             Actions réalisées

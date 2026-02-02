@@ -334,6 +334,13 @@ export async function getPitch(pitchId: string) {
               crag: true,
             },
           },
+          pitches: {
+            select: {
+              id: true,
+              cotation: true,
+              length: true,
+            },
+          },
         },
       },
     },

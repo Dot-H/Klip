@@ -34,12 +34,22 @@ export default async function RoutePage({ params }: RoutePageProps) {
   const allPitchesHaveCotation = route.pitches.every((p) => p.cotation != null);
   const maxCotation = getMaxCotation(route.pitches);
 
-  const allReports = route.pitches.flatMap((p) =>
-    p.reports.map((r) => ({ ...r, pitchId: p.id })),
+  const allReports = route.pitches.flatMap((p, index) =>
+    p.reports.map((r) => ({ ...r, pitchId: p.id, pitchNumber: index + 1 })),
   );
-  allReports.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  allReports.sort((a, b) => {
+    // Compare by day (ignore time)
+    const dayA = new Date(a.createdAt).toDateString();
+    const dayB = new Date(b.createdAt).toDateString();
+
+    // If same day and same user, sort by pitch number
+    if (dayA === dayB && a.reporter.id === b.reporter.id) {
+      return a.pitchNumber - b.pitchNumber;
+    }
+
+    // Otherwise sort by exact timestamp (most recent first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const firstPitchId = route.pitches[0]?.id;
 
@@ -139,7 +149,11 @@ export default async function RoutePage({ params }: RoutePageProps) {
       ) : (
         <Box sx={{ mt: 2 }}>
           {allReports.map((report) => (
-            <ReportCard key={report.id} report={report} />
+            <ReportCard
+              key={report.id}
+              report={report}
+              pitchNumber={route.pitches.length > 1 ? report.pitchNumber : undefined}
+            />
           ))}
         </Box>
       )}
