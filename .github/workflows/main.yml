@@ -15,6 +15,7 @@ jobs:
     env:
       NODE_ENV: test
       NEXTAUTH_SECRET: supersecret
+      DATABASE_URL: postgresql://postgres@localhost:5432/trpcdb
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -29,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 22.x
-          cache: 'pnpm' # You can active this cache when your repo has a lockfile
+          cache: 'pnpm'
 
       - name: Install deps (with cache)
         run: pnpm install
@@ -45,6 +46,9 @@ jobs:
 
       - name: Setup Prisma
         run: pnpm prebuild
+
+      - name: Seed database
+        run: pnpm db-seed
 
       - run: pnpm build
       - run: pnpm test-e2e
@@ -74,6 +78,7 @@ jobs:
     env:
       NODE_ENV: test
       NEXTAUTH_SECRET: supersecret
+      DATABASE_URL: postgresql://postgres@localhost:5432/trpcdb
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -102,5 +107,5 @@ jobs:
       - name: Setup Prisma
         run: pnpm prebuild
 
-      - run: pnpm test-unit
+      - run: pnpm test
       - run: pnpm tsc
