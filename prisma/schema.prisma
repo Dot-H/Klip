@@ -10,12 +10,18 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum UserRole {
+  CONTRIBUTOR
+  ROUTE_SETTER
+  ADMIN
+}
+
 model User {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   firstname String
   lastname  String
-  email     String @unique
-  roleFlags Int    @map("role_flags")
+  email     String   @unique
+  role      UserRole @default(CONTRIBUTOR)
 
   // Relations
   coordinators Coordinator[]

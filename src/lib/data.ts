@@ -5,6 +5,9 @@
 
 import { prisma } from '~/server/prisma';
 
+export type { UserRole } from './roles';
+export { USER_ROLE_LABELS } from './roles';
+
 // ============ Types ============
 
 export interface CragWithStats {
@@ -54,6 +57,7 @@ export interface PitchWithReports {
       firstname: string;
       lastname: string;
       email: string;
+      role: UserRole;
     };
   }[];
 }
@@ -208,6 +212,7 @@ export async function getRouteWithReports(
                   firstname: true,
                   lastname: true,
                   email: true,
+                  role: true,
                 },
               },
             },
@@ -301,7 +306,6 @@ export async function createReport(input: CreateReportInput): Promise<string> {
       email: input.email,
       firstname: input.firstname,
       lastname: input.lastname,
-      roleFlags: 0,
     },
   });
 
@@ -400,6 +404,56 @@ export async function getPitch(pitchId: string) {
 }
 
 /**
+ * Get user by email
+ */
+export async function getUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      email: true,
+      role: true,
+    },
+  });
+}
+
+/**
+ * Get or create user by email (for syncing with auth provider)
+ */
+export async function getOrCreateUser(email: string, name?: string) {
+  let firstname = '';
+  let lastname = '';
+
+  if (name) {
+    const nameParts = name.trim().split(/\s+/);
+    firstname = nameParts[0] || '';
+    lastname = nameParts.slice(1).join(' ') || '';
+  }
+
+  return prisma.user.upsert({
+    where: { email },
+    update: {
+      ...(firstname && { firstname }),
+      ...(lastname && { lastname }),
+    },
+    create: {
+      email,
+      firstname,
+      lastname,
+    },
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      email: true,
+      role: true,
+    },
+  });
+}
+
+/**
  * Create a report with Neon Auth session data
  * Upserts user by email from auth provider
  */
@@ -427,7 +481,6 @@ export async function createReportWithAuth(
       email: input.userEmail,
       firstname,
       lastname,
-      roleFlags: 0,
     },
   });
 

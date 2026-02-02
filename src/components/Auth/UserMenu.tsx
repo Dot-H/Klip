@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   IconButton,
   Avatar,
@@ -10,6 +10,7 @@ import {
   ListItemText,
   Divider,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginIcon from '@mui/icons-material/Login';
@@ -17,14 +18,34 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from './AuthRequiredModal';
+import { USER_ROLE_LABELS, type UserRole } from '~/lib/roles';
 
 export function UserMenu() {
   const session = authClient.useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   const open = Boolean(anchorEl);
+  const user = session.data?.user;
+
+  useEffect(() => {
+    if (user?.email) {
+      fetch('/api/user/me')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.role) {
+            setUserRole(data.role);
+          }
+        })
+        .catch(() => {
+          // Ignore errors
+        });
+    } else {
+      setUserRole(null);
+    }
+  }, [user?.email]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -48,8 +69,6 @@ export function UserMenu() {
       setLoggingOut(false);
     }
   };
-
-  const user = session.data?.user;
 
   // Get initials from user name or email
   const getInitials = () => {
@@ -131,10 +150,7 @@ export function UserMenu() {
       >
         {user ? (
           [
-            <MenuItem key="profile" disabled>
-              <ListItemIcon>
-                <PersonIcon fontSize="small" />
-              </ListItemIcon>
+            <MenuItem key="profile" disabled sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
               <ListItemText
                 primary={user.name || 'Utilisateur'}
                 secondary={user.email}
@@ -142,6 +158,14 @@ export function UserMenu() {
                   sx: { fontSize: '0.75rem', color: 'text.secondary' },
                 }}
               />
+              {userRole && (
+                <Chip
+                  label={USER_ROLE_LABELS[userRole]}
+                  size="small"
+                  color={userRole === 'ADMIN' ? 'secondary' : userRole === 'ROUTE_SETTER' ? 'primary' : 'default'}
+                  sx={{ mt: 0.5, height: 20, fontSize: '0.7rem' }}
+                />
+              )}
             </MenuItem>,
             <Divider key="divider" />,
             <MenuItem key="logout" onClick={handleLogout} disabled={loggingOut}>

@@ -28,6 +28,7 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import BuildIcon from '@mui/icons-material/Build';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { USER_ROLE_LABELS, type UserRole } from '~/lib/roles';
 import type { PitchWithReports } from '~/lib/data';
 
 type Report = PitchWithReports['reports'][number];
@@ -44,6 +45,17 @@ function formatDate(date: Date): string {
     month: 'long',
     year: 'numeric',
   }).format(new Date(date));
+}
+
+function getRoleChipColor(role: UserRole): 'default' | 'primary' | 'secondary' {
+  switch (role) {
+    case 'ADMIN':
+      return 'secondary';
+    case 'ROUTE_SETTER':
+      return 'primary';
+    default:
+      return 'default';
+  }
 }
 
 export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCardProps) {
@@ -142,10 +154,16 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
               mb: 2,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Typography variant="subtitle1" fontWeight={600}>
                 {report.reporter.firstname} {report.reporter.lastname}
               </Typography>
+              <Chip
+                label={USER_ROLE_LABELS[report.reporter.role]}
+                size="small"
+                color={getRoleChipColor(report.reporter.role)}
+                sx={{ height: 20, fontSize: '0.7rem' }}
+              />
               {pitchNumber && (
                 <Chip label={`L${pitchNumber}`} size="small" variant="outlined" />
               )}
