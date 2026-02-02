@@ -55,6 +55,16 @@ export default async function RoutePage({ params }: RoutePageProps) {
             sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
           >
             {routeName}
+            {route.length != null && (
+              <Typography
+                component="span"
+                variant="h6"
+                color="text.secondary"
+                sx={{ ml: 1.5, fontWeight: 'normal' }}
+              >
+                {route.length}m
+              </Typography>
+            )}
           </Typography>
           <Typography variant="body1" color="text.secondary">
             {route.sector.name} • {route.sector.crag.name}
@@ -78,16 +88,21 @@ export default async function RoutePage({ params }: RoutePageProps) {
             Longueurs
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {route.pitches.map((pitch, index) => (
-              <LinkButton
-                key={pitch.id}
-                href={`/route/${route.id}/report?pitchId=${pitch.id}`}
-                variant="outlined"
-                size="small"
-              >
-                L{index + 1}
-              </LinkButton>
-            ))}
+            {route.pitches.map((pitch, index) => {
+              const details = [pitch.cotation, pitch.length != null ? `${pitch.length}m` : null]
+                .filter(Boolean)
+                .join(', ');
+              return (
+                <LinkButton
+                  key={pitch.id}
+                  href={`/route/${route.id}/report?pitchId=${pitch.id}`}
+                  variant="outlined"
+                  size="small"
+                >
+                  L{index + 1}{details && ` (${details})`}
+                </LinkButton>
+              );
+            })}
           </Stack>
         </Paper>
       )}

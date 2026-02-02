@@ -22,6 +22,7 @@ export interface SectorWithRoutes {
     id: string;
     number: number;
     name: string | null;
+    length: number | null;
   }[];
 }
 
@@ -37,6 +38,7 @@ export interface PitchWithReports {
   description: string | null;
   length: number | null;
   nbBolts: number | null;
+  cotation: string | null;
   reports: {
     id: string;
     createdAt: Date;
@@ -59,6 +61,7 @@ export interface RouteDetail {
   number: number;
   name: string | null;
   description: string | null;
+  length: number | null;
   sector: {
     id: string;
     name: string;
@@ -148,6 +151,7 @@ export async function getCragWithRoutes(
               id: true,
               number: true,
               name: true,
+              length: true,
             },
           },
         },
@@ -214,6 +218,7 @@ export async function getRouteWithReports(
     number: route.number,
     name: route.name,
     description: route.description,
+    length: route.length,
     sector: {
       id: route.sector.id,
       name: route.sector.name,
@@ -224,6 +229,7 @@ export async function getRouteWithReports(
       description: pitch.description,
       length: pitch.length,
       nbBolts: pitch.nbBolts,
+      cotation: pitch.cotation,
       reports: pitch.reports.map((report) => ({
         id: report.id,
         createdAt: report.createdAt,

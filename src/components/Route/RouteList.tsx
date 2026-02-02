@@ -44,9 +44,21 @@ export function RouteList({ sector }: RouteListProps) {
             <ListItemButton component={Link} href={`/route/${route.id}`}>
               <ListItemText
                 primary={
-                  route.name
-                    ? `${route.number}. ${route.name}`
-                    : `Voie ${route.number}`
+                  <>
+                    {route.name
+                      ? `${route.number}. ${route.name}`
+                      : `Voie ${route.number}`}
+                    {route.length != null && (
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ ml: 1 }}
+                      >
+                        {route.length}m
+                      </Typography>
+                    )}
+                  </>
                 }
               />
               <ChevronRightIcon color="action" />

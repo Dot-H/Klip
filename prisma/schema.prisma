@@ -68,6 +68,7 @@ model Route {
   name        String?
   description String?
   orientation Int?   @db.SmallInt
+  length      Int?   // Total length in meters
 
   // Relations
   sector Sector  @relation(fields: [sectorId], references: [id], onDelete: Cascade)
@@ -82,6 +83,7 @@ model Pitch {
   description String?
   length      Int?
   nbBolts     Int?    @map("nb_bolts")
+  cotation    String? // Climbing grade (e.g., "6a", "7b+")
 
   // Relations
   route   Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
