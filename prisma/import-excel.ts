@@ -21,22 +21,60 @@ interface ExcelRow {
 interface ParsedRoute {
   number: number;
   name: string | null;
+  grade: string | null;
+  pitchNumber: number | null;
 }
 
+// Regex for pitch indicator with grade: "L1: 6c+" or "L2:6b"
+const PITCH_WITH_GRADE_REGEX = /L(\d+)\s*:\s*([3-9][a-c]\+?)/gi;
+// Regex for standalone climbing grades: 3a to 9c with optional +
+// Matches grade at word boundary start, captures the + if present
+const GRADE_REGEX = /\b([3-9][a-c])(\+)?/i;
+
 function parseRouteName(routeStr: string): ParsedRoute {
+  let workingStr = routeStr.trim();
+
+  // First, extract all pitch indicators with their grades (e.g., "L1: 6c+", "L2: 6b")
+  // We only care about the first one for this row
+  const pitchMatches = [...workingStr.matchAll(PITCH_WITH_GRADE_REGEX)];
+  let pitchNumber: number | null = null;
+  let grade: string | null = null;
+
+  if (pitchMatches.length > 0) {
+    pitchNumber = parseInt(pitchMatches[0][1], 10);
+    grade = pitchMatches[0][2].toLowerCase();
+    // Remove all pitch indicators from the string
+    workingStr = workingStr.replace(PITCH_WITH_GRADE_REGEX, '').trim();
+  } else {
+    // Try to extract standalone grade if no pitch indicator
+    const gradeMatch = workingStr.match(GRADE_REGEX);
+    if (gradeMatch) {
+      // Combine base grade (group 1) with optional + (group 2)
+      grade = (gradeMatch[1] + (gradeMatch[2] || '')).toLowerCase();
+      workingStr = workingStr.replace(GRADE_REGEX, '').trim();
+    }
+  }
+
   // Format: "1 - Assurancetourix" -> { number: 1, name: "Assurancetourix" }
   // Or: "Les pas perdus" (no number) -> { number: 0, name: "Les pas perdus" }
-  const match = routeStr.match(/^(\d+)\s*-\s*(.+)$/);
+  const match = workingStr.match(/^(\d+)\s*-\s*(.+)$/);
   if (match) {
     return {
       number: parseInt(match[1], 10),
-      name: match[2].trim(),
+      name: match[2].trim() || null,
+      grade,
+      pitchNumber,
     };
   }
-  // Fallback: no number prefix
+
+  // Check if there's any name left after removing grade and pitch
+  const remainingName = workingStr.trim();
+
   return {
     number: 0,
-    name: routeStr.trim(),
+    name: remainingName || null,
+    grade,
+    pitchNumber,
   };
 }
 
@@ -76,6 +114,10 @@ async function importSheet(
   const cragMap = new Map<string, string>(); // name -> id
   const sectorMap = new Map<string, string>(); // "cragId:sectorName" -> id
   let routeCount = 0;
+  let pitchCount = 0;
+
+  // Track current route for multi-pitch routes (when we see L2, L3, etc. without a name)
+  let currentRouteId: string | null = null;
 
   for (const row of dataRows) {
     if (!row || row.length === 0) continue;
@@ -172,30 +214,49 @@ async function importSheet(
     // Parse route name
     const parsedRoute = parseRouteName(excelRow.route);
 
-    // Create Route
-    const route = await prisma.route.create({
-      data: {
-        sectorId: sectorId,
-        number: parsedRoute.number,
-        name: parsedRoute.name,
-      },
-    });
+    // Case 1: We have a pitch indicator (LX) but no name -> this is an additional pitch for the current route
+    if (parsedRoute.pitchNumber && !parsedRoute.name && currentRouteId) {
+      await prisma.pitch.create({
+        data: {
+          routeId: currentRouteId,
+          cotation: parsedRoute.grade || null,
+          nbBolts: excelRow.nbBolts || null,
+        },
+      });
+      pitchCount++;
+      continue;
+    }
 
-    // Create Pitch(es)
-    const nbPitches = excelRow.nbPitches || 1;
-    for (let i = 0; i < nbPitches; i++) {
+    // Case 2: We have a name -> create a new route
+    if (parsedRoute.name) {
+      const route = await prisma.route.create({
+        data: {
+          sectorId: sectorId,
+          number: parsedRoute.number,
+          name: parsedRoute.name,
+        },
+      });
+
+      currentRouteId = route.id;
+      routeCount++;
+
+      // Create the first pitch
       await prisma.pitch.create({
         data: {
           routeId: route.id,
-          nbBolts: i === 0 ? excelRow.nbBolts || null : null,
+          cotation: parsedRoute.grade || null,
+          nbBolts: excelRow.nbBolts || null,
         },
       });
+      pitchCount++;
+      continue;
     }
 
-    routeCount++;
+    // Case 3: No name and no current route - skip with warning
+    console.warn(`  Skipping row: cannot determine route for "${excelRow.route}"`);
   }
 
-  console.log(`  Created ${routeCount} routes`);
+  console.log(`  Created ${routeCount} routes, ${pitchCount} pitches`);
 }
 
 async function main() {
