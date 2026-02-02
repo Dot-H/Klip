@@ -53,6 +53,7 @@ export interface PitchWithReports {
       id: string;
       firstname: string;
       lastname: string;
+      email: string;
     };
   }[];
 }
@@ -206,6 +207,7 @@ export async function getRouteWithReports(
                   id: true,
                   firstname: true,
                   lastname: true,
+                  email: true,
                 },
               },
             },
@@ -318,6 +320,56 @@ export async function createReport(input: CreateReportInput): Promise<string> {
   });
 
   return report.id;
+}
+
+/**
+ * Get a report by ID
+ */
+export async function getReport(reportId: string) {
+  return prisma.report.findUnique({
+    where: { id: reportId },
+    include: {
+      reporter: {
+        select: { id: true, email: true },
+      },
+    },
+  });
+}
+
+/**
+ * Update a report
+ */
+export async function updateReport(
+  reportId: string,
+  data: {
+    visualCheck?: boolean;
+    anchorCheck?: boolean;
+    cleaningDone?: boolean;
+    trundleDone?: boolean;
+    totalReboltingDone?: boolean;
+    comment?: string;
+  },
+) {
+  return prisma.report.update({
+    where: { id: reportId },
+    data: {
+      visualCheck: data.visualCheck ?? null,
+      anchorCheck: data.anchorCheck ?? null,
+      cleaningDone: data.cleaningDone ?? null,
+      trundleDone: data.trundleDone ?? null,
+      totalReboltingDone: data.totalReboltingDone ?? null,
+      comment: data.comment ?? null,
+    },
+  });
+}
+
+/**
+ * Delete a report
+ */
+export async function deleteReport(reportId: string) {
+  return prisma.report.delete({
+    where: { id: reportId },
+  });
 }
 
 /**

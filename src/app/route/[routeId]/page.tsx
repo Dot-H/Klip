@@ -3,6 +3,7 @@ import { Box, Typography, Stack, Paper, Divider } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { getRouteWithReports } from '~/lib/data';
 import { getMaxCotation } from '~/lib/grades';
+import { auth } from '~/lib/auth/server';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { ReportCard } from '~/components/Report/ReportCard';
 import { LinkButton } from '~/components/common/LinkButton';
@@ -13,11 +14,16 @@ interface RoutePageProps {
 
 export default async function RoutePage({ params }: RoutePageProps) {
   const { routeId } = await params;
-  const route = await getRouteWithReports(routeId);
+  const [route, session] = await Promise.all([
+    getRouteWithReports(routeId),
+    auth.getSession(),
+  ]);
 
   if (!route) {
     notFound();
   }
+
+  const currentUserEmail = session.data?.user?.email;
 
   const routeName = route.name
     ? `${route.number}. ${route.name}`
@@ -153,6 +159,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
               key={report.id}
               report={report}
               pitchNumber={route.pitches.length > 1 ? report.pitchNumber : undefined}
+              currentUserEmail={currentUserEmail}
             />
           ))}
         </Box>
