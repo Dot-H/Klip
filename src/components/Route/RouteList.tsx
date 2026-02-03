@@ -56,7 +56,7 @@ export function RouteList({ sector }: RouteListProps) {
       {sector.routes.length === 0 ? (
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography color="text.secondary" sx={{ mb: 2 }}>
-            Aucune voie repertoriee dans ce secteur
+            Aucune voie répertoriée dans ce secteur
           </Typography>
           <RouteAddButton
             sectorId={sector.id}

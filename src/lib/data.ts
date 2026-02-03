@@ -130,6 +130,11 @@ export interface CreateSectorInput {
   name: string;
 }
 
+export interface CreateCragInput {
+  name: string;
+  convention?: boolean | null;
+}
+
 // ============ Functions ============
 
 /**
@@ -583,4 +588,18 @@ export async function createSector(input: CreateSectorInput): Promise<string> {
   });
 
   return sector.id;
+}
+
+/**
+ * Create a new crag (climbing site)
+ */
+export async function createCrag(input: CreateCragInput): Promise<string> {
+  const crag = await prisma.crag.create({
+    data: {
+      name: input.name,
+      convention: input.convention ?? null,
+    },
+  });
+
+  return crag.id;
 }
