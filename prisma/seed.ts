@@ -7,6 +7,32 @@
  */
 import { PrismaClient } from '@prisma/client';
 
+// Protection contre l'exécution en production
+if (process.env.NODE_ENV === 'production') {
+  console.error(
+    '❌ ERREUR: Le script de seed ne peut pas être exécuté en production!',
+  );
+  console.error('Ce script supprime TOUTES les données existantes.');
+  process.exit(1);
+}
+
+// Vérifier si l'URL ressemble à une URL de production
+const databaseUrl = process.env.DATABASE_URL || '';
+const productionPatterns = ['neon.tech', 'supabase', 'planetscale', 'amazonaws.com'];
+if (
+  productionPatterns.some((pattern) => databaseUrl.includes(pattern)) &&
+  process.env.ALLOW_DESTRUCTIVE_SEED !== 'true'
+) {
+  console.error(
+    '❌ ERREUR: DATABASE_URL semble pointer vers une base de production!',
+  );
+  console.error(`URL détectée: ${databaseUrl.substring(0, 50)}...`);
+  console.error(
+    'Si vous voulez vraiment exécuter ce script, définissez ALLOW_DESTRUCTIVE_SEED=true',
+  );
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -289,13 +315,61 @@ async function main() {
     },
   });
 
+  // Route with missing data (no length, no cotation) - single pitch
+  const voieSansInfo = await prisma.route.create({
+    data: {
+      number: 3,
+      name: 'Voie à compléter',
+      sectorId: grandeVoieSector.id,
+    },
+  });
+
+  await prisma.pitch.create({
+    data: {
+      routeId: voieSansInfo.id,
+      // No cotation, no length - needs to be filled in
+    },
+  });
+
+  // Multi-pitch route with partial data
+  const voiePartielle = await prisma.route.create({
+    data: {
+      number: 4,
+      name: 'Données partielles',
+      sectorId: grandeVoieSector.id,
+    },
+  });
+
+  await prisma.pitch.create({
+    data: {
+      routeId: voiePartielle.id,
+      cotation: '6a',
+      // No length
+    },
+  });
+
+  await prisma.pitch.create({
+    data: {
+      routeId: voiePartielle.id,
+      length: 25,
+      // No cotation
+    },
+  });
+
+  await prisma.pitch.create({
+    data: {
+      routeId: voiePartielle.id,
+      // No cotation, no length
+    },
+  });
+
   console.log('Seed completed successfully!');
   console.log('Created:');
   console.log('- 3 users (admin, route setter, contributor)');
   console.log('- 3 crags (Buoux, Céüse, Verdon)');
   console.log('- 4 sectors');
-  console.log('- 6 routes (including 1 multi-pitch)');
-  console.log('- 8 pitches');
+  console.log('- 8 routes (including 2 multi-pitch, 2 with missing data)');
+  console.log('- 12 pitches');
   console.log('- 4 reports');
 }
 

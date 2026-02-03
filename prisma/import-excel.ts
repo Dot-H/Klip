@@ -7,6 +7,32 @@ import * as XLSX from 'xlsx';
 import { PrismaClient } from '@prisma/client';
 import * as path from 'path';
 
+// Protection contre l'exécution en production
+if (process.env.NODE_ENV === 'production') {
+  console.error(
+    '❌ ERREUR: Le script d\'import ne peut pas être exécuté en production!',
+  );
+  console.error('Ce script supprime TOUTES les données existantes.');
+  process.exit(1);
+}
+
+// Vérifier si l'URL ressemble à une URL de production
+const databaseUrl = process.env.DATABASE_URL || '';
+const productionPatterns = ['neon.tech', 'supabase', 'planetscale', 'amazonaws.com'];
+if (
+  productionPatterns.some((pattern) => databaseUrl.includes(pattern)) &&
+  process.env.ALLOW_DESTRUCTIVE_SEED !== 'true'
+) {
+  console.error(
+    '❌ ERREUR: DATABASE_URL semble pointer vers une base de production!',
+  );
+  console.error(`URL détectée: ${databaseUrl.substring(0, 50)}...`);
+  console.error(
+    'Si vous voulez vraiment exécuter ce script, définissez ALLOW_DESTRUCTIVE_SEED=true',
+  );
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 interface ExcelRow {
