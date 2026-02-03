@@ -12,6 +12,8 @@ const config: PlaywrightTestConfig = {
   // 'github' for GitHub Actions CI to generate annotations, plus a concise 'dot'
   // default 'list' when running locally
   reporter: process.env.CI ? 'github' : 'list',
+  // Limit workers to prevent overwhelming the dev server
+  workers: process.env.CI ? 4 : 3,
   use: {
     ...devices['Desktop Chrome'],
     headless: opts.headless,
