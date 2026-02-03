@@ -199,6 +199,34 @@ describe('PATCH /api/pitches/[pitchId]', () => {
       expect(response.status).toBe(400);
     });
 
+    it('validates cotation format', async () => {
+      const request = new NextRequest('http://localhost/api/pitches/test', {
+        method: 'PATCH',
+        body: JSON.stringify({ cotation: 'invalid' }),
+      });
+
+      const response = await PATCH(request, {
+        params: Promise.resolve({ pitchId: testPitchId }),
+      });
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toBe('Cotation invalide (ex: 6a, 7b+)');
+    });
+
+    it('allows valid cotation formats', async () => {
+      const request = new NextRequest('http://localhost/api/pitches/test', {
+        method: 'PATCH',
+        body: JSON.stringify({ cotation: '6a+' }),
+      });
+
+      const response = await PATCH(request, {
+        params: Promise.resolve({ pitchId: testPitchId }),
+      });
+
+      expect(response.status).toBe(200);
+    });
+
     it('allows null values for optional fields', async () => {
       const request = new NextRequest('http://localhost/api/pitches/test', {
         method: 'PATCH',

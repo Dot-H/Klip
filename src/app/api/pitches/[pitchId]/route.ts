@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '~/lib/auth/server';
 import { getUserByEmail, getPitch, updatePitch } from '~/lib/data';
+import { isValidCotation } from '~/lib/grades';
 
 export const dynamic = 'force-dynamic';
 
 const updateSchema = z.object({
   length: z.number().int().positive().nullable().optional(),
-  cotation: z.string().max(10).nullable().optional(),
+  cotation: z
+    .string()
+    .max(10)
+    .refine((val) => isValidCotation(val), { message: 'Cotation invalide (ex: 6a, 7b+)' })
+    .nullable()
+    .optional(),
 });
 
 interface RouteParams {
