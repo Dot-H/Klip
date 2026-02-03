@@ -4,8 +4,9 @@
  */
 
 import { prisma } from '~/server/prisma';
+import type { UserRole } from './roles';
 
-export type { UserRole } from './roles';
+export type { UserRole };
 export { USER_ROLE_LABELS } from './roles';
 
 // ============ Types ============

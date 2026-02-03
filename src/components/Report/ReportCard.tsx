@@ -159,9 +159,9 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
                 {report.reporter.firstname} {report.reporter.lastname}
               </Typography>
               <Chip
-                label={USER_ROLE_LABELS[report.reporter.role]}
+                label={USER_ROLE_LABELS[report.reporter.role as UserRole]}
                 size="small"
-                color={getRoleChipColor(report.reporter.role)}
+                color={getRoleChipColor(report.reporter.role as UserRole)}
                 sx={{ height: 20, fontSize: '0.7rem' }}
               />
               {pitchNumber && (

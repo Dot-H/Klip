@@ -133,11 +133,11 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
               )}
               {session.isPending ? (
                 <CircularProgress size={20} />
-              ) : isAuthenticated ? (
+              ) : isAuthenticated && session.data ? (
                 <Typography>
                   Connecté en tant que{' '}
                   <strong>
-                    {session.data.user.name || session.data.user.email}
+                    {session.data.user?.name || session.data.user?.email}
                   </strong>
                 </Typography>
               ) : (

@@ -42,7 +42,7 @@ export function EmotionCacheProvider({ children }: { children: React.ReactNode }
     inserted.forEach(({ name, isGlobal }) => {
       const style = registry.cache.inserted[name];
 
-      if (typeof style !== 'boolean') {
+      if (typeof style === 'string') {
         if (isGlobal) {
           globals.push({ name, style });
         } else {
