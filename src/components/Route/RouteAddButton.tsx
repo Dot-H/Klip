@@ -31,12 +31,14 @@ interface RouteAddButtonProps {
   sectorId: string;
   sectorName: string;
   suggestedNumber: number;
+  variant?: 'header' | 'standalone';
 }
 
 export function RouteAddButton({
   sectorId,
   sectorName,
   suggestedNumber,
+  variant = 'header',
 }: RouteAddButtonProps) {
   const router = useRouter();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -179,7 +181,25 @@ export function RouteAddButton({
     }
   };
 
-  return (
+  const standaloneButton = (
+    <Tooltip
+      title={canAdd ? '' : 'Seuls les ouvreurs peuvent ajouter des voies'}
+      arrow
+    >
+      <Box component="span">
+        <Button
+          variant="contained"
+          disabled={!canAdd}
+          onClick={handleOpen}
+          startIcon={<AddIcon />}
+        >
+          Ajouter une voie
+        </Button>
+      </Box>
+    </Tooltip>
+  );
+
+  const headerButton = (
     <>
       {/* Mobile: icon only */}
       <Tooltip
@@ -221,6 +241,12 @@ export function RouteAddButton({
           </Button>
         </Box>
       </Tooltip>
+    </>
+  );
+
+  return (
+    <>
+      {variant === 'standalone' ? standaloneButton : headerButton}
 
       <Dialog open={dialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>Ajouter une voie - {sectorName}</DialogTitle>

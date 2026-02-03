@@ -3,6 +3,7 @@ import { Box, Typography, Chip, Stack } from '@mui/material';
 import { getCragWithRoutes } from '~/lib/data';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { RouteList } from '~/components/Route/RouteList';
+import { SectorAddButton } from '~/components/Sector/SectorAddButton';
 
 interface CragPageProps {
   params: Promise<{ cragId: string }>;
@@ -44,10 +45,18 @@ export default async function CragPage({ params }: CragPageProps) {
         )}
       </Stack>
 
-      <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 2, sm: 4 } }}>
-        {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
-        {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
-      </Typography>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={2}
+        sx={{ mb: { xs: 2, sm: 4 } }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
+          {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
+        </Typography>
+        <SectorAddButton cragId={cragId} cragName={crag.name} />
+      </Stack>
 
       {crag.sectors.map((sector) => (
         <RouteList key={sector.id} sector={sector} />

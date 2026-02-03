@@ -125,6 +125,11 @@ export interface CreateRouteInput {
   pitches: CreatePitchInput[];
 }
 
+export interface CreateSectorInput {
+  cragId: string;
+  name: string;
+}
+
 // ============ Functions ============
 
 /**
@@ -555,4 +560,27 @@ export async function createRoute(input: CreateRouteInput): Promise<string> {
   });
 
   return route.id;
+}
+
+/**
+ * Create a sector in a crag
+ */
+export async function createSector(input: CreateSectorInput): Promise<string> {
+  // Verify crag exists
+  const crag = await prisma.crag.findUnique({
+    where: { id: input.cragId },
+  });
+
+  if (!crag) {
+    throw new Error('Site non trouvé');
+  }
+
+  const sector = await prisma.sector.create({
+    data: {
+      cragId: input.cragId,
+      name: input.name,
+    },
+  });
+
+  return sector.id;
 }
