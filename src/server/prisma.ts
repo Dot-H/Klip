@@ -3,7 +3,12 @@
  * @see https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
  */
 import { env } from './env';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../prisma/generated/prisma/client.ts';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
 const prismaGlobal = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
@@ -12,6 +17,7 @@ const prismaGlobal = globalThis as typeof globalThis & {
 export const prisma: PrismaClient =
   prismaGlobal.prisma ??
   new PrismaClient({
+    adapter,
     log:
       env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });

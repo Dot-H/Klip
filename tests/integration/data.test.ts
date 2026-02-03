@@ -3,6 +3,7 @@
  * Tests database operations directly without HTTP layer
  * Uses existing seed data from test:db:setup
  */
+import { describe, it, expect, afterAll } from 'vitest';
 import { prisma, disconnectDatabase } from '../setup/db';
 import {
   getAllCrags,
