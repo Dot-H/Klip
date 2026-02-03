@@ -111,7 +111,7 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
             onClick={handleOpen}
             sx={{ p: 0.5 }}
           >
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize="small" data-testid="EditIcon" />
           </IconButton>
         </span>
       </Tooltip>

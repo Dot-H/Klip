@@ -1,5 +1,8 @@
-name: Testing
-on: [push]
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
 jobs:
   e2e:
     name: 'Build + E2E tests'
@@ -20,6 +23,8 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/klip_test
+      NEON_AUTH_BASE_URL: http://localhost:3000
+      NEON_AUTH_COOKIE_SECRET: ci-test-secret-key-at-least-32-chars
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -69,7 +74,7 @@ jobs:
             playwright/test-results
 
   unit:
-    name: 'Unit tests + typecheck'
+    name: 'Unit + Integration tests'
     services:
       postgres:
         image: postgres:15-alpine
@@ -115,5 +120,14 @@ jobs:
       - name: Setup Prisma
         run: pnpm prebuild
 
-      - run: pnpm test
-      - run: pnpm tsc
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Seed database
+        run: pnpm db-seed
+
+      - name: Run integration tests
+        run: pnpm test:integration
+
+      - name: Check types
+        run: pnpm tsc
