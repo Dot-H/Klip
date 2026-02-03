@@ -18,8 +18,10 @@ if (process.env.NODE_ENV === 'production') {
 
 // Vérifier si l'URL ressemble à une URL de production
 const databaseUrl = process.env.DATABASE_URL || '';
+const isLocalDatabase = databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1');
 const productionPatterns = ['neon.tech', 'supabase', 'planetscale', 'amazonaws.com'];
 if (
+  !isLocalDatabase &&
   productionPatterns.some((pattern) => databaseUrl.includes(pattern)) &&
   process.env.ALLOW_DESTRUCTIVE_SEED !== 'true'
 ) {

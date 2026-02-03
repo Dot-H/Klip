@@ -5,17 +5,21 @@ jobs:
     name: 'Build + E2E tests'
     services:
       postgres:
-        image: postgres
+        image: postgres:15-alpine
         env:
-          POSTGRES_DATABASE: trpcdb
+          POSTGRES_DB: klip_test
           POSTGRES_USER: postgres
-          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       NODE_ENV: test
-      NEXTAUTH_SECRET: supersecret
-      DATABASE_URL: postgresql://postgres@localhost:5432/trpcdb
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/klip_test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -68,17 +72,21 @@ jobs:
     name: 'Unit tests + typecheck'
     services:
       postgres:
-        image: postgres
+        image: postgres:15-alpine
         env:
-          POSTGRES_DATABASE: trpcdb
+          POSTGRES_DB: klip_test
           POSTGRES_USER: postgres
-          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       NODE_ENV: test
-      NEXTAUTH_SECRET: supersecret
-      DATABASE_URL: postgresql://postgres@localhost:5432/trpcdb
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/klip_test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
