@@ -3,13 +3,14 @@
  * Tests report creation with authentication
  * Uses existing seed data from test:db:setup
  */
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { prisma, disconnectDatabase } from '../../setup/db';
 import { mockUsers } from '../../setup/auth-mock';
 
 // Mock the auth module
-const mockGetSession = jest.fn();
-jest.mock('~/lib/auth/server', () => ({
+const mockGetSession = vi.fn();
+vi.mock('~/lib/auth/server', () => ({
   auth: {
     getSession: () => mockGetSession(),
   },

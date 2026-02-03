@@ -4,7 +4,9 @@
  */
 
 import * as XLSX from 'xlsx';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/prisma/client.ts';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as path from 'path';
 
 // Protection contre l'exécution en production
@@ -33,7 +35,9 @@ if (
   process.exit(1);
 }
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 interface ExcelRow {
   site: string | undefined;

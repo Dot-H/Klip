@@ -5,7 +5,9 @@
  *
  * For importing data from Excel, use: pnpm tsx prisma/import-excel.ts
  */
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/prisma/client.ts';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 // Protection contre l'exécution en production
 if (process.env.NODE_ENV === 'production') {
@@ -35,7 +37,9 @@ if (
   process.exit(1);
 }
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Clean existing data

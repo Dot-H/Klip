@@ -3,12 +3,13 @@
  * Tests authentication and user retrieval
  * Uses existing seed data from test:db:setup
  */
+import { describe, it, expect, afterAll, beforeEach, vi } from 'vitest';
 import { prisma, disconnectDatabase } from '../../setup/db';
 import { mockUsers } from '../../setup/auth-mock';
 
 // Mock the auth module
-const mockGetSession = jest.fn();
-jest.mock('~/lib/auth/server', () => ({
+const mockGetSession = vi.fn();
+vi.mock('~/lib/auth/server', () => ({
   auth: {
     getSession: () => mockGetSession(),
   },

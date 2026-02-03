@@ -3,6 +3,7 @@
  * Tests search functionality without authentication requirement
  * Uses existing seed data from test:db:setup
  */
+import { describe, it, expect, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { disconnectDatabase } from '../../setup/db';
 
