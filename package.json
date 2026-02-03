@@ -19,6 +19,8 @@
     "migrate-dev": "prisma migrate dev",
     "migrate": "prisma migrate deploy",
     "test": "jest --passWithNoTests",
+    "test:unit": "jest --config jest.config.js",
+    "test:integration": "dotenv -e .env.test -- jest --config tests/jest.integration.config.js",
     "test:watch": "jest --watch",
     "test-e2e": "playwright test",
     "test-start": "run-s test test-e2e",
@@ -27,6 +29,8 @@
     "test:db:setup": "dotenv -e .env.test -- pnpm prisma migrate deploy && dotenv -e .env.test -- pnpm db-seed",
     "test:local": "run-s test:db:up test:db:setup test:e2e:local test:db:down",
     "test:e2e:local": "PLAYWRIGHT_HEADLESS=1 dotenv -e .env.test -- playwright test",
+    "test:fast": "pnpm test:unit && pnpm test:integration",
+    "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e:local",
     "postinstall": "pnpm generate",
     "typecheck": "tsc --noEmit"
   },

@@ -5,7 +5,9 @@ test.describe('Page de détail d\'une route simple', () => {
     // Navigate to Rose des Sables route from home
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Rose des Sables/i }).click();
+    await page.waitForURL(/\/route\//);
   });
 
   test('affiche le nom de la route', async ({ page }) => {
@@ -47,7 +49,9 @@ test.describe('Page de détail d\'une route avec rapports', () => {
     // Navigate to Tabou au Nord route (has a report)
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Tabou au Nord/i }).click();
+    await page.waitForURL(/\/route\//);
   });
 
   test('affiche l\'historique des rapports', async ({ page }) => {
@@ -75,12 +79,14 @@ test.describe('Page de détail d\'une route multi-longueurs', () => {
     // Navigate to Pichenibule (multi-pitch route in Verdon)
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
   });
 
   test('affiche la cotation maximale', async ({ page }) => {
-    // Max cotation is 6c
-    await expect(page.getByText('6c')).toBeVisible();
+    // Max cotation is 6c - check in the header section
+    await expect(page.locator('h1').getByText('6c')).toBeVisible();
   });
 
   test('affiche la section longueurs', async ({ page }) => {

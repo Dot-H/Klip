@@ -5,7 +5,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     // Navigate to Pichenibule which has reports from Jean Admin (ADMIN role)
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Find the first report card for Jean Admin (he has multiple reports)
     const reportCard = page.locator('.MuiCard-root', { hasText: 'Jean Admin' }).first();
@@ -23,7 +25,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     // Navigate to Tabou au Nord which has a report from Pierre Ouvreur (ROUTE_SETTER role)
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Tabou au Nord/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Find the report card for Pierre Ouvreur
     const reportCard = page.locator('.MuiCard-root', { hasText: 'Pierre Ouvreur' });
@@ -41,7 +45,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     // Navigate to Pichenibule which has reports from Marie Grimpeuse (CONTRIBUTOR role)
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Find the report card for Marie Grimpeuse
     const reportCard = page.locator('.MuiCard-root', { hasText: 'Marie Grimpeuse' });
@@ -59,7 +65,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     // Navigate to Pichenibule which has multiple reports
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Get all report cards
     const reportCards = page.locator('.MuiCard-root').filter({
@@ -71,22 +79,16 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
   });
 });
 
-test.describe('API /api/user/me', () => {
-  test('retourne 401 si non authentifié', async ({ request }) => {
-    const response = await request.get('/api/user/me');
-    expect(response.status()).toBe(401);
-
-    const body = await response.json();
-    expect(body.error).toBe('Authentification requise');
-  });
-});
+// API tests moved to tests/integration/api/user-me.test.ts
 
 test.describe('Labels de rôles', () => {
   test('les trois rôles ont des labels français corrects', async ({ page }) => {
     // Navigate to a page with reports showing all role types
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Verify French labels are used (not English enum values)
     // Use role chip locator to be specific
@@ -99,7 +101,9 @@ test.describe('Labels de rôles', () => {
     // Navigate to see Ouvreur
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Tabou au Nord/i }).click();
+    await page.waitForURL(/\/route\//);
 
     const ouvreurChip = page.locator('.MuiChip-root', { hasText: /^Ouvreur$/ });
     await expect(ouvreurChip).toBeVisible();

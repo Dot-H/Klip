@@ -5,8 +5,13 @@ test.describe('Page de création de rapport', () => {
     // Navigate to report form for Rose des Sables
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Rose des Sables/i }).click();
+    await page.waitForURL(/\/route\//);
+    await expect(page.getByRole('heading', { name: /Rose des Sables/i })).toBeVisible();
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
+    await page.waitForURL(/\/report\?pitchId=/);
+    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible();
   });
 
   test('affiche le titre de la page', async ({ page }) => {
@@ -94,8 +99,11 @@ test.describe('Rapport multi-longueurs', () => {
     // Navigate to report form for Pichenibule (multi-pitch)
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await expect(page.getByRole('heading', { name: /Pichenibule/i })).toBeVisible();
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
+    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible();
   });
 
   test('affiche la section "Longueurs concernées"', async ({ page }) => {
@@ -122,7 +130,9 @@ test.describe('Affichage des rapports existants', () => {
   test('affiche les rapports sur une route avec historique', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Should see reports
     await expect(page.getByRole('heading', { name: /Historique des rapports/i })).toBeVisible();
@@ -134,7 +144,9 @@ test.describe('Affichage des rapports existants', () => {
   test('affiche les badges d\'actions complétées', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Check for completed action chips
     await expect(page.getByText('Contrôle visuel').first()).toBeVisible();
@@ -144,7 +156,9 @@ test.describe('Affichage des rapports existants', () => {
   test('affiche les commentaires des rapports', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Check for comments
     await expect(page.getByText(/L1 en parfait état/i)).toBeVisible();
@@ -154,7 +168,9 @@ test.describe('Affichage des rapports existants', () => {
   test('affiche le numéro de longueur dans les rapports multi-pitch', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Check pitch numbers in report cards
     const l1Chip = page.locator('.MuiChip-root', { hasText: 'L1' });
@@ -166,7 +182,9 @@ test.describe('Navigation depuis le bouton rapport', () => {
   test('le bouton "Nouveau rapport" navigue vers le formulaire', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Tabou au Nord/i }).click();
+    await page.waitForURL(/\/route\//);
 
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
 
@@ -179,7 +197,9 @@ test.describe('Navigation depuis le bouton rapport', () => {
   test('clic sur longueur spécifique pré-sélectionne cette longueur', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Click on L2 button in pitches section
     await page.getByRole('link', { name: /L2.*6c/i }).click();

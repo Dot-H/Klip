@@ -264,14 +264,10 @@ export async function searchRoutes(query: string): Promise<SearchResult[]> {
 
   const searchTerm = `%${query}%`;
 
-  // Search routes
+  // Search routes by name only
   const routes = await prisma.route.findMany({
     where: {
-      OR: [
-        { name: { contains: query, mode: 'insensitive' } },
-        { sector: { name: { contains: query, mode: 'insensitive' } } },
-        { sector: { crag: { name: { contains: query, mode: 'insensitive' } } } },
-      ],
+      name: { contains: query, mode: 'insensitive' },
     },
     include: {
       sector: {

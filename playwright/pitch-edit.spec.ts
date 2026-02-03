@@ -5,7 +5,9 @@ test.describe('Édition des pitches - Affichage du bouton', () => {
     // Navigate to Pichenibule (multi-pitch route)
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Pichenibule/i }).click();
+    await page.waitForURL(/\/route\//);
   });
 
   test('affiche un bouton d\'édition à côté de chaque longueur', async ({ page }) => {
@@ -40,7 +42,9 @@ test.describe('Édition des pitches - Route simple (une seule longueur)', () => 
     // Navigate to Rose des Sables (single pitch route)
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Rose des Sables/i }).click();
+    await page.waitForURL(/\/route\//);
   });
 
   test('n\'affiche pas de section Longueurs pour une route simple', async ({ page }) => {
@@ -65,6 +69,7 @@ test.describe('Édition des pitches - Données manquantes', () => {
     // Navigate to Verdon which has routes with missing data
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
 
     // "Voie à compléter" should show warning color (missing cotation and length)
     const voieSansInfo = page.getByRole('link', { name: /Voie à compléter/i }).first();
@@ -74,7 +79,9 @@ test.describe('Édition des pitches - Données manquantes', () => {
   test('route simple sans données affiche "?" pour cotation et longueur', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Voie à compléter/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Should show "Cotation?" for missing cotation and "?m" for missing length in the header
     const header = page.locator('h1');
@@ -85,7 +92,9 @@ test.describe('Édition des pitches - Données manquantes', () => {
   test('route multi-longueurs avec données partielles affiche "?" pour les valeurs manquantes', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
     await page.getByRole('link', { name: /Données partielles/i }).click();
+    await page.waitForURL(/\/route\//);
 
     // Should have 3 pitches, some with missing data
     await expect(page.getByText(/Longueurs/i)).toBeVisible();
@@ -101,24 +110,4 @@ test.describe('Édition des pitches - Données manquantes', () => {
   });
 });
 
-test.describe('API /api/pitches/[pitchId]', () => {
-  test('retourne 401 si non authentifié', async ({ request }) => {
-    const response = await request.patch('/api/pitches/some-pitch-id', {
-      data: { length: 30 },
-    });
-    expect(response.status()).toBe(401);
-
-    const body = await response.json();
-    expect(body.error).toBe('Authentification requise');
-  });
-
-  test('valide les données avec Zod - longueur négative', async ({ request }) => {
-    // This test will return 401 because we're not authenticated,
-    // but in a real scenario with auth, it would validate the data
-    const response = await request.patch('/api/pitches/some-pitch-id', {
-      data: { length: -5 },
-    });
-    // Will be 401 because not authenticated
-    expect(response.status()).toBe(401);
-  });
-});
+// API tests moved to tests/integration/api/pitches.test.ts

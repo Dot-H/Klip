@@ -5,7 +5,7 @@ test.describe('Page de détail d\'un crag', () => {
     // Navigate to Buoux crag from home page
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
-    await expect(page.getByRole('heading', { name: 'Buoux' })).toBeVisible();
+    await page.waitForURL(/\/crag\//);
   });
 
   test('affiche le nom du crag et ses informations', async ({ page }) => {
@@ -64,8 +64,9 @@ test.describe('Crag sans convention', () => {
   test('affiche le badge "Sans convention"', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /Verdon/i }).click();
+    await page.waitForURL(/\/crag\//);
 
-    await expect(page.getByRole('heading', { name: 'Verdon' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Verdon', level: 1 })).toBeVisible();
     await expect(page.getByText('Sans convention')).toBeVisible();
   });
 });

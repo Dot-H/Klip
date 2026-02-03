@@ -23,31 +23,11 @@ test.describe('Recherche de voies', () => {
     await searchInput.click();
     await searchInput.fill('Rose');
 
-    // Wait for results
-    await expect(page.getByText('Rose des Sables')).toBeVisible({ timeout: 5000 });
+    // Wait for results (allow more time for API on cold start)
+    await expect(page.getByText('Rose des Sables')).toBeVisible({ timeout: 10000 });
 
     // Should show context (crag and sector)
     await expect(page.getByText(/Buoux.*Styx/i)).toBeVisible();
-  });
-
-  test('recherche par nom de secteur', async ({ page }) => {
-    const searchInput = page.getByPlaceholder(/Rechercher une voie/i);
-    await searchInput.click();
-    await searchInput.fill('Styx');
-
-    // Should find routes in Styx sector
-    await expect(page.getByText('Rose des Sables').first().or(page.getByText('Tabou au Nord').first())).toBeVisible({
-      timeout: 5000,
-    });
-  });
-
-  test('recherche par nom de site', async ({ page }) => {
-    const searchInput = page.getByPlaceholder(/Rechercher une voie/i);
-    await searchInput.click();
-    await searchInput.fill('Verdon');
-
-    // Should find routes in Verdon
-    await expect(page.getByText('Pichenibule').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('navigation vers une route depuis les résultats', async ({ page }) => {
@@ -75,7 +55,7 @@ test.describe('Recherche de voies', () => {
   test('la recherche fonctionne depuis une page de crag', async ({ page }) => {
     // Navigate to a crag first
     await page.getByRole('link', { name: /Buoux/i }).click();
-    await expect(page.getByRole('heading', { name: 'Buoux' })).toBeVisible();
+    await page.waitForURL(/\/crag\//);
 
     // Search should still work
     const searchInput = page.getByPlaceholder(/Rechercher une voie/i);

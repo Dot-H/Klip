@@ -45,10 +45,10 @@ test.describe('Navigation globale', () => {
     // Start on a crag page
     await page.goto('/');
     await page.getByRole('link', { name: /Buoux/i }).click();
-    await expect(page).toHaveURL(/\/crag\//);
+    await page.waitForURL(/\/crag\//);
 
     // Click logo/home link
-    await page.getByRole('link', { name: 'Klip' }).click();
+    await page.getByRole('link', { name: 'KLIP' }).click();
 
     // Should be back on home page
     await expect(page).toHaveURL('/');
