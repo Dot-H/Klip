@@ -112,6 +112,19 @@ export interface CreateReportWithAuthInput {
   comment?: string;
 }
 
+export interface CreatePitchInput {
+  cotation?: string | null;
+  length?: number | null;
+}
+
+export interface CreateRouteInput {
+  sectorId: string;
+  number: number;
+  name?: string | null;
+  description?: string | null;
+  pitches: CreatePitchInput[];
+}
+
 // ============ Functions ============
 
 /**
@@ -509,4 +522,37 @@ export async function createReportWithAuth(
   });
 
   return report.id;
+}
+
+/**
+ * Create a route with pitches
+ * Uses Prisma nested create for transaction safety
+ */
+export async function createRoute(input: CreateRouteInput): Promise<string> {
+  // Verify sector exists
+  const sector = await prisma.sector.findUnique({
+    where: { id: input.sectorId },
+  });
+
+  if (!sector) {
+    throw new Error('Secteur non trouvé');
+  }
+
+  // Create route with pitches in a single transaction
+  const route = await prisma.route.create({
+    data: {
+      sectorId: input.sectorId,
+      number: input.number,
+      name: input.name ?? null,
+      description: input.description ?? null,
+      pitches: {
+        create: input.pitches.map((p) => ({
+          cotation: p.cotation ?? null,
+          length: p.length ?? null,
+        })),
+      },
+    },
+  });
+
+  return route.id;
 }

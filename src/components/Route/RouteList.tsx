@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {
+  Box,
   List,
   ListItem,
   ListItemButton,
@@ -12,29 +13,46 @@ import {
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { SectorWithRoutes } from '~/lib/data';
 import { getMaxCotation } from '~/lib/grades';
+import { RouteAddButton } from './RouteAddButton';
 
 interface RouteListProps {
   sector: SectorWithRoutes;
 }
 
 export function RouteList({ sector }: RouteListProps) {
+  const suggestedNumber =
+    Math.max(...sector.routes.map((r) => r.number), 0) + 1;
+
   return (
     <Paper elevation={1} sx={{ mb: { xs: 2, sm: 3 } }}>
-      <Typography
-        variant="h6"
-        component="h3"
+      <Box
         sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           px: 2,
           py: 1.5,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
-          fontSize: { xs: '1rem', sm: '1.25rem' },
         }}
       >
-        {sector.name}
-      </Typography>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
+          {sector.name}
+        </Typography>
+        <RouteAddButton
+          sectorId={sector.id}
+          sectorName={sector.name}
+          suggestedNumber={suggestedNumber}
+        />
+      </Box>
       <List disablePadding>
         {sector.routes.map((route, index) => {
           const allPitchesHaveLength = route.pitches.every((p) => p.length != null);
