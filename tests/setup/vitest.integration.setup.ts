@@ -2,8 +2,10 @@
 import dotenv from 'dotenv'
 import path from 'path'
 
-// Load .env.test
-dotenv.config({ path: path.resolve(process.cwd(), '.env.test') })
+// Load .env.test only if DATABASE_URL is not already set (CI sets it directly)
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.test') })
+}
 
 // Verify we're using the test database
 if (!process.env.DATABASE_URL?.includes('localhost')) {
