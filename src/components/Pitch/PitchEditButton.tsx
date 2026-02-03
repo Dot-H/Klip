@@ -14,9 +14,11 @@ import {
   CircularProgress,
   Box,
   InputAdornment,
+  Typography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import type { UserRole } from '~/lib/roles';
+import { isValidCotation } from '~/lib/grades';
 
 interface PitchEditButtonProps {
   pitch: {
@@ -32,6 +34,7 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     length: pitch.length?.toString() ?? '',
     cotation: pitch.cotation ?? '',
@@ -62,10 +65,18 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
   };
 
   const handleSave = async () => {
+    setError(null);
     setLoading(true);
     try {
       const lengthValue = formData.length === '' ? null : parseInt(formData.length, 10);
       const cotationValue = formData.cotation === '' ? null : formData.cotation;
+
+      // Validate cotation
+      if (cotationValue && !isValidCotation(cotationValue)) {
+        setError('Cotation invalide (ex: 6a, 7b+)');
+        setLoading(false);
+        return;
+      }
 
       const response = await fetch(`/api/pitches/${pitch.id}`, {
         method: 'PATCH',
@@ -77,13 +88,14 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update pitch');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update pitch');
       }
 
       setEditOpen(false);
       router.refresh();
-    } catch (error) {
-      console.error('Error updating pitch:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setLoading(false);
     }
@@ -95,6 +107,7 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
       length: pitch.length?.toString() ?? '',
       cotation: pitch.cotation ?? '',
     });
+    setError(null);
     setEditOpen(true);
   };
 
@@ -120,6 +133,11 @@ export function PitchEditButton({ pitch, pitchNumber }: PitchEditButtonProps) {
         <DialogTitle>Modifier L{pitchNumber}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
             <TextField
               name="length"
               label="Longueur"

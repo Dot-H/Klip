@@ -20,6 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { UserRole } from '~/lib/roles';
+import { isValidCotation } from '~/lib/grades';
 
 interface PitchFormData {
   cotation: string;
@@ -124,6 +125,21 @@ export function RouteAddButton({
         return;
       }
 
+      if (!formData.name.trim()) {
+        setError('Le nom est requis');
+        setLoading(false);
+        return;
+      }
+
+      // Validate cotations
+      for (const pitch of pitches) {
+        if (pitch.cotation && !isValidCotation(pitch.cotation)) {
+          setError('Cotation invalide (ex: 6a, 7b+)');
+          setLoading(false);
+          return;
+        }
+      }
+
       const pitchesData = pitches.map((p) => ({
         cotation: p.cotation || null,
         length: p.length ? parseInt(p.length, 10) : null,
@@ -207,9 +223,10 @@ export function RouteAddButton({
               />
               <TextField
                 name="name"
-                label="Nom (optionnel)"
+                label="Nom"
                 value={formData.name}
                 onChange={handleFormChange}
+                required
                 fullWidth
               />
             </Box>
@@ -253,7 +270,7 @@ export function RouteAddButton({
                     handlePitchChange(index, 'length', e.target.value)
                   }
                   size="small"
-                  sx={{ width: 100 }}
+                  sx={{ width: 130 }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">m</InputAdornment>

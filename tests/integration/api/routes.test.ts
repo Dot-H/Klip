@@ -51,6 +51,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -70,6 +71,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -91,6 +93,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -112,6 +115,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -131,6 +135,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 100,
+          name: 'Admin Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -153,6 +158,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 101,
+          name: 'Route Setter Route',
           pitches: [{ cotation: '6b' }],
         }),
       });
@@ -179,6 +185,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: 'not-a-uuid',
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -190,12 +197,48 @@ describe('POST /api/routes', () => {
       expect(body.error).toBe('ID de secteur invalide');
     });
 
+    it('validates name is required', async () => {
+      const request = new NextRequest('http://localhost/api/routes', {
+        method: 'POST',
+        body: JSON.stringify({
+          sectorId: testSectorId,
+          number: 99,
+          pitches: [{ cotation: '6a' }],
+        }),
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toBe('Le nom est requis');
+    });
+
+    it('validates name cannot be empty', async () => {
+      const request = new NextRequest('http://localhost/api/routes', {
+        method: 'POST',
+        body: JSON.stringify({
+          sectorId: testSectorId,
+          number: 99,
+          name: '',
+          pitches: [{ cotation: '6a' }],
+        }),
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toBe('Le nom est requis');
+    });
+
     it('validates number is positive', async () => {
       const request = new NextRequest('http://localhost/api/routes', {
         method: 'POST',
         body: JSON.stringify({
           sectorId: testSectorId,
           number: -1,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -211,6 +254,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 1.5,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -226,6 +270,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [],
         }),
       });
@@ -243,6 +288,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a', length: -5 }],
         }),
       });
@@ -258,6 +304,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a', length: 25.5 }],
         }),
       });
@@ -267,12 +314,53 @@ describe('POST /api/routes', () => {
       expect(response.status).toBe(400);
     });
 
+    it('validates cotation format', async () => {
+      const request = new NextRequest('http://localhost/api/routes', {
+        method: 'POST',
+        body: JSON.stringify({
+          sectorId: testSectorId,
+          number: 99,
+          name: 'Test Route',
+          pitches: [{ cotation: 'invalid' }],
+        }),
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.error).toBe('Cotation invalide (ex: 6a, 7b+)');
+    });
+
+    it('allows valid cotation formats', async () => {
+      const request = new NextRequest('http://localhost/api/routes', {
+        method: 'POST',
+        body: JSON.stringify({
+          sectorId: testSectorId,
+          number: 106,
+          name: 'Route Valid Cotation',
+          pitches: [
+            { cotation: '6a' },
+            { cotation: '7b+' },
+            { cotation: '8C' },
+          ],
+        }),
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(201);
+      const body = await response.json();
+      createdRouteIds.push(body.id);
+    });
+
     it('allows null values for optional pitch fields', async () => {
       const request = new NextRequest('http://localhost/api/routes', {
         method: 'POST',
         body: JSON.stringify({
           sectorId: testSectorId,
           number: 102,
+          name: 'Route With Null Pitch',
           pitches: [{ cotation: null, length: null }],
         }),
       });
@@ -296,6 +384,7 @@ describe('POST /api/routes', () => {
         body: JSON.stringify({
           sectorId: '00000000-0000-0000-0000-000000000000',
           number: 99,
+          name: 'Test Route',
           pitches: [{ cotation: '6a' }],
         }),
       });
@@ -383,30 +472,5 @@ describe('POST /api/routes', () => {
       expect(route!.pitches).toHaveLength(3);
     });
 
-    it('creates route without optional name', async () => {
-      mockGetSession.mockResolvedValue({
-        data: { user: mockUsers.admin },
-      });
-
-      const request = new NextRequest('http://localhost/api/routes', {
-        method: 'POST',
-        body: JSON.stringify({
-          sectorId: testSectorId,
-          number: 105,
-          pitches: [{ cotation: '5c' }],
-        }),
-      });
-
-      const response = await POST(request);
-
-      expect(response.status).toBe(201);
-      const body = await response.json();
-      createdRouteIds.push(body.id);
-
-      const route = await prisma.route.findUnique({
-        where: { id: body.id },
-      });
-      expect(route!.name).toBeNull();
-    });
   });
 });

@@ -120,7 +120,7 @@ export interface CreatePitchInput {
 export interface CreateRouteInput {
   sectorId: string;
   number: number;
-  name?: string | null;
+  name: string;
   description?: string | null;
   pitches: CreatePitchInput[];
 }
@@ -543,7 +543,7 @@ export async function createRoute(input: CreateRouteInput): Promise<string> {
     data: {
       sectorId: input.sectorId,
       number: input.number,
-      name: input.name ?? null,
+      name: input.name,
       description: input.description ?? null,
       pitches: {
         create: input.pitches.map((p) => ({

@@ -2,18 +2,24 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '~/lib/auth/server';
 import { createRoute, getUserByEmail } from '~/lib/data';
+import { isValidCotation } from '~/lib/grades';
 
 export const dynamic = 'force-dynamic';
 
 const pitchSchema = z.object({
-  cotation: z.string().max(10).optional().nullable(),
+  cotation: z
+    .string()
+    .max(10)
+    .refine((val) => isValidCotation(val), { message: 'Cotation invalide (ex: 6a, 7b+)' })
+    .optional()
+    .nullable(),
   length: z.number().int().positive().optional().nullable(),
 });
 
 const createRouteSchema = z.object({
   sectorId: z.string().uuid('ID de secteur invalide'),
   number: z.number().int().positive('Le numero doit etre positif'),
-  name: z.string().max(200).optional().nullable(),
+  name: z.string({ required_error: 'Le nom est requis' }).min(1, 'Le nom est requis').max(200),
   description: z.string().max(2000).optional().nullable(),
   pitches: z.array(pitchSchema).min(1, 'Au moins une longueur requise'),
 });

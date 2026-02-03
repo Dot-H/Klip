@@ -3,6 +3,19 @@
  */
 
 /**
+ * Regex pattern for valid French climbing grades
+ * Matches: 4, 4a, 4a+, 6b+, 7C, etc.
+ */
+const GRADE_PATTERN = /^[3-9][a-c]?(\+)?$/i;
+
+/**
+ * Check if a cotation string is valid
+ */
+export function isValidCotation(cotation: string): boolean {
+  return GRADE_PATTERN.test(cotation);
+}
+
+/**
  * Parse a French climbing grade into comparable parts
  * e.g., "6a+" -> { number: 6, letter: "a", modifier: "+" }
  */
