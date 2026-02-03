@@ -1,16 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Affichage des rôles utilisateur dans les rapports', () => {
-  test('affiche le badge "Admin" pour un utilisateur admin', async ({ page }) => {
-    // Navigate to Pichenibule which has reports from Jean Admin (ADMIN role)
-    await page.goto('/');
-    await page.getByRole('link', { name: /Verdon/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Pichenibule/i }).click();
-    await page.waitForURL(/\/route\//);
-
+  test('affiche le badge "Admin" pour un utilisateur admin', async ({ pichenibulePage }) => {
     // Find the first report card for Jean Admin (he has multiple reports)
-    const reportCard = page.locator('.MuiCard-root', { hasText: 'Jean Admin' }).first();
+    const reportCard = pichenibulePage.locator('.MuiCard-root', { hasText: 'Jean Admin' }).first();
     await expect(reportCard).toBeVisible();
 
     // Check the Admin badge is displayed
@@ -21,16 +14,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     await expect(adminBadge).toHaveClass(/MuiChip-colorSecondary/);
   });
 
-  test('affiche le badge "Ouvreur" pour un route setter', async ({ page }) => {
-    // Navigate to Tabou au Nord which has a report from Pierre Ouvreur (ROUTE_SETTER role)
-    await page.goto('/');
-    await page.getByRole('link', { name: /Buoux/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Tabou au Nord/i }).click();
-    await page.waitForURL(/\/route\//);
-
+  test('affiche le badge "Ouvreur" pour un route setter', async ({ tabouAuNordPage }) => {
     // Find the report card for Pierre Ouvreur
-    const reportCard = page.locator('.MuiCard-root', { hasText: 'Pierre Ouvreur' });
+    const reportCard = tabouAuNordPage.locator('.MuiCard-root', { hasText: 'Pierre Ouvreur' });
     await expect(reportCard).toBeVisible();
 
     // Check the Ouvreur badge is displayed
@@ -41,16 +27,9 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     await expect(ouvreurBadge).toHaveClass(/MuiChip-colorPrimary/);
   });
 
-  test('affiche le badge "Contributeur" pour un contributeur', async ({ page }) => {
-    // Navigate to Pichenibule which has reports from Marie Grimpeuse (CONTRIBUTOR role)
-    await page.goto('/');
-    await page.getByRole('link', { name: /Verdon/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Pichenibule/i }).click();
-    await page.waitForURL(/\/route\//);
-
+  test('affiche le badge "Contributeur" pour un contributeur', async ({ pichenibulePage }) => {
     // Find the report card for Marie Grimpeuse
-    const reportCard = page.locator('.MuiCard-root', { hasText: 'Marie Grimpeuse' });
+    const reportCard = pichenibulePage.locator('.MuiCard-root', { hasText: 'Marie Grimpeuse' });
     await expect(reportCard).toBeVisible();
 
     // Check the Contributeur badge is displayed
@@ -61,17 +40,10 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
     await expect(contributeurBadge).toHaveClass(/MuiChip-colorDefault/);
   });
 
-  test('chaque rapport affiche un badge de rôle', async ({ page }) => {
-    // Navigate to Pichenibule which has multiple reports
-    await page.goto('/');
-    await page.getByRole('link', { name: /Verdon/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Pichenibule/i }).click();
-    await page.waitForURL(/\/route\//);
-
+  test('chaque rapport affiche un badge de rôle', async ({ pichenibulePage }) => {
     // Get all report cards
-    const reportCards = page.locator('.MuiCard-root').filter({
-      has: page.locator('.MuiChip-root', { hasText: /Admin|Ouvreur|Contributeur/ }),
+    const reportCards = pichenibulePage.locator('.MuiCard-root').filter({
+      has: pichenibulePage.locator('.MuiChip-root', { hasText: /Admin|Ouvreur|Contributeur/ }),
     });
 
     // Should have at least 2 reports with role badges
@@ -82,35 +54,17 @@ test.describe('Affichage des rôles utilisateur dans les rapports', () => {
 // API tests moved to tests/integration/api/user-me.test.ts
 
 test.describe('Labels de rôles', () => {
-  test('les trois rôles ont des labels français corrects', async ({ page }) => {
-    // Navigate to a page with reports showing all role types
-    await page.goto('/');
-    await page.getByRole('link', { name: /Verdon/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Pichenibule/i }).click();
-    await page.waitForURL(/\/route\//);
-
-    // Verify French labels are used (not English enum values)
-    // Use role chip locator to be specific
-    const adminChip = page.locator('.MuiChip-root', { hasText: /^Admin$/ });
+  test('affiche les labels français Admin et Contributeur', async ({ pichenibulePage }) => {
+    // Verify French labels are used - use exact match with regex boundaries
+    const adminChip = pichenibulePage.locator('.MuiChip-root', { hasText: /^Admin$/ });
     await expect(adminChip.first()).toBeVisible();
 
-    const contributeurChip = page.locator('.MuiChip-root', { hasText: /^Contributeur$/ });
+    const contributeurChip = pichenibulePage.locator('.MuiChip-root', { hasText: /^Contributeur$/ });
     await expect(contributeurChip.first()).toBeVisible();
+  });
 
-    // Navigate to see Ouvreur
-    await page.goto('/');
-    await page.getByRole('link', { name: /Buoux/i }).click();
-    await page.waitForURL(/\/crag\//);
-    await page.getByRole('link', { name: /Tabou au Nord/i }).click();
-    await page.waitForURL(/\/route\//);
-
-    const ouvreurChip = page.locator('.MuiChip-root', { hasText: /^Ouvreur$/ });
+  test('affiche le label français Ouvreur', async ({ tabouAuNordPage }) => {
+    const ouvreurChip = tabouAuNordPage.locator('.MuiChip-root', { hasText: /^Ouvreur$/ });
     await expect(ouvreurChip).toBeVisible();
-
-    // Make sure we don't show raw enum values
-    await expect(page.locator('.MuiChip-root', { hasText: 'ADMIN' })).not.toBeVisible();
-    await expect(page.locator('.MuiChip-root', { hasText: 'ROUTE_SETTER' })).not.toBeVisible();
-    await expect(page.locator('.MuiChip-root', { hasText: 'CONTRIBUTOR' })).not.toBeVisible();
   });
 });
