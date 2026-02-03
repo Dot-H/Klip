@@ -181,11 +181,12 @@ export function RouteAddButton({
 
   return (
     <>
+      {/* Mobile: icon only */}
       <Tooltip
         title={canAdd ? 'Ajouter une voie' : 'Seuls les ouvreurs peuvent ajouter des voies'}
         arrow
       >
-        <span>
+        <Box component="span" sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
           <IconButton
             size="small"
             disabled={!canAdd}
@@ -197,7 +198,28 @@ export function RouteAddButton({
           >
             <AddIcon />
           </IconButton>
-        </span>
+        </Box>
+      </Tooltip>
+
+      {/* Desktop: button with text */}
+      <Tooltip
+        title={canAdd ? '' : 'Seuls les ouvreurs peuvent ajouter des voies'}
+        arrow
+      >
+        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
+          <Button
+            size="small"
+            disabled={!canAdd}
+            onClick={handleOpen}
+            startIcon={<AddIcon />}
+            sx={{
+              color: 'primary.contrastText',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+            }}
+          >
+            Ajouter une voie
+          </Button>
+        </Box>
       </Tooltip>
 
       <Dialog open={dialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
