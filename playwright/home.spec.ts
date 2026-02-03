@@ -18,8 +18,8 @@ test.describe('Page d\'accueil', () => {
 
   test('affiche les statistiques des crags', async ({ page }) => {
     // Check that stats are displayed (sectors and routes count)
-    await expect(page.getByText(/secteur/)).toBeVisible();
-    await expect(page.getByText(/voie/)).toBeVisible();
+    await expect(page.getByText(/secteur/).first()).toBeVisible();
+    await expect(page.getByText(/voie/).first()).toBeVisible();
   });
 
   test('navigation vers un crag', async ({ page }) => {

@@ -36,7 +36,7 @@ test.describe('Recherche de voies', () => {
     await searchInput.fill('Styx');
 
     // Should find routes in Styx sector
-    await expect(page.getByText('Rose des Sables').or(page.getByText('Tabou au Nord'))).toBeVisible({
+    await expect(page.getByText('Rose des Sables').first().or(page.getByText('Tabou au Nord').first())).toBeVisible({
       timeout: 5000,
     });
   });
@@ -47,7 +47,7 @@ test.describe('Recherche de voies', () => {
     await searchInput.fill('Verdon');
 
     // Should find routes in Verdon
-    await expect(page.getByText('Pichenibule')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Pichenibule').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('navigation vers une route depuis les résultats', async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe('Recherche de voies', () => {
     await searchInput.fill('Bio');
 
     // Wait for and click result
-    await page.getByText('Biographie').click();
+    await page.getByText('Biographie').first().click();
 
     // Should navigate to route page
     await expect(page).toHaveURL(/\/route\//);

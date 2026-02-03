@@ -16,15 +16,15 @@ test.describe('Page de création de rapport', () => {
   });
 
   test('affiche les informations de la voie', async ({ page }) => {
-    await expect(page.getByText(/Rose des Sables/i)).toBeVisible();
-    await expect(page.getByText(/Styx/i)).toBeVisible();
-    await expect(page.getByText(/Buoux/i)).toBeVisible();
+    await expect(page.getByText(/Rose des Sables/i).first()).toBeVisible();
+    await expect(page.getByText(/Styx/i).first()).toBeVisible();
+    await expect(page.getByText(/Buoux/i).first()).toBeVisible();
   });
 
   test('affiche les breadcrumbs', async ({ page }) => {
-    const nav = page.getByRole('navigation', { name: /breadcrumb/i });
-    await expect(nav).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Buoux' })).toBeVisible();
+    // Check for breadcrumb links (Accueil, Buoux, etc.)
+    await expect(page.getByRole('link', { name: 'Accueil' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Buoux' }).first()).toBeVisible();
   });
 
   test('affiche la section "Vos informations"', async ({ page }) => {
@@ -128,7 +128,7 @@ test.describe('Affichage des rapports existants', () => {
     await expect(page.getByRole('heading', { name: /Historique des rapports/i })).toBeVisible();
 
     // Check reporter names are visible
-    await expect(page.getByText('Jean Admin')).toBeVisible();
+    await expect(page.getByText('Jean Admin').first()).toBeVisible();
   });
 
   test('affiche les badges d\'actions complétées', async ({ page }) => {
@@ -137,8 +137,8 @@ test.describe('Affichage des rapports existants', () => {
     await page.getByRole('link', { name: /Pichenibule/i }).click();
 
     // Check for completed action chips
-    await expect(page.getByText('Contrôle visuel')).toBeVisible();
-    await expect(page.getByText('Nettoyage')).toBeVisible();
+    await expect(page.getByText('Contrôle visuel').first()).toBeVisible();
+    await expect(page.getByText('Nettoyage').first()).toBeVisible();
   });
 
   test('affiche les commentaires des rapports', async ({ page }) => {

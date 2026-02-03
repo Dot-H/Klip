@@ -108,7 +108,7 @@ test.describe('Page de détail d\'une route multi-longueurs', () => {
   test('affiche les rôles des rapporteurs', async ({ page }) => {
     // Use chip locator to find role badges specifically
     await expect(page.locator('.MuiChip-root', { hasText: /^Admin$/ }).first()).toBeVisible();
-    await expect(page.locator('.MuiChip-root', { hasText: /^Contributeur$/ })).toBeVisible();
+    await expect(page.locator('.MuiChip-root', { hasText: /^Contributeur$/ }).first()).toBeVisible();
   });
 
   test('clic sur une longueur navigue vers le formulaire de rapport', async ({ page }) => {

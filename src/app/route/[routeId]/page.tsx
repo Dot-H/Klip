@@ -7,6 +7,7 @@ import { auth } from '~/lib/auth/server';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { ReportCard } from '~/components/Report/ReportCard';
 import { LinkButton } from '~/components/common/LinkButton';
+import { PitchEditButton } from '~/components/Pitch/PitchEditButton';
 
 interface RoutePageProps {
   params: Promise<{ routeId: string }>;
@@ -77,29 +78,34 @@ export default async function RoutePage({ params }: RoutePageProps) {
         sx={{ mb: { xs: 2, sm: 4 } }}
       >
         <Box>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
-          >
-            {routeName}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography
-              component="span"
-              variant="h6"
-              color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
-              sx={{ ml: 1.5, fontWeight: 'normal' }}
+              variant="h4"
+              component="h1"
+              sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
             >
-              {maxCotation ?? 'Cotation?'}
+              {routeName}
+              <Typography
+                component="span"
+                variant="h6"
+                color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
+                sx={{ ml: 1.5, fontWeight: 'normal' }}
+              >
+                {maxCotation ?? 'Cotation?'}
+              </Typography>
+              <Typography
+                component="span"
+                variant="h6"
+                color={totalLength != null ? 'text.secondary' : 'warning.main'}
+                sx={{ ml: 1, fontWeight: 'normal' }}
+              >
+                {totalLength != null ? `${totalLength}m` : '?m'}
+              </Typography>
             </Typography>
-            <Typography
-              component="span"
-              variant="h6"
-              color={totalLength != null ? 'text.secondary' : 'warning.main'}
-              sx={{ ml: 1, fontWeight: 'normal' }}
-            >
-              {totalLength != null ? `${totalLength}m` : '?m'}
-            </Typography>
-          </Typography>
+            {route.pitches.length === 1 && (
+              <PitchEditButton pitch={route.pitches[0]} pitchNumber={1} />
+            )}
+          </Box>
           <Typography variant="body1" color="text.secondary">
             {route.sector.name} • {route.sector.crag.name}
           </Typography>
@@ -127,15 +133,17 @@ export default async function RoutePage({ params }: RoutePageProps) {
               const length = pitch.length != null ? `${pitch.length}m` : '?m';
               const hasMissing = !pitch.cotation || pitch.length == null;
               return (
-                <LinkButton
-                  key={pitch.id}
-                  href={`/route/${route.id}/report?pitchId=${pitch.id}`}
-                  variant="outlined"
-                  size="small"
-                  color={hasMissing ? 'warning' : 'primary'}
-                >
-                  L{index + 1} ({cotation}, {length})
-                </LinkButton>
+                <Box key={pitch.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <LinkButton
+                    href={`/route/${route.id}/report?pitchId=${pitch.id}`}
+                    variant="outlined"
+                    size="small"
+                    color={hasMissing ? 'warning' : 'primary'}
+                  >
+                    L{index + 1} ({cotation}, {length})
+                  </LinkButton>
+                  <PitchEditButton pitch={pitch} pitchNumber={index + 1} />
+                </Box>
               );
             })}
           </Stack>

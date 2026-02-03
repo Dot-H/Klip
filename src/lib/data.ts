@@ -454,6 +454,19 @@ export async function getOrCreateUser(email: string, name?: string) {
 }
 
 /**
+ * Update a pitch's length and/or cotation
+ */
+export async function updatePitch(
+  pitchId: string,
+  data: { length?: number | null; cotation?: string | null },
+) {
+  return prisma.pitch.update({
+    where: { id: pitchId },
+    data,
+  });
+}
+
+/**
  * Create a report with Neon Auth session data
  * Upserts user by email from auth provider
  */
