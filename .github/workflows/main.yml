@@ -120,6 +120,9 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
+      - name: Seed database
+        run: pnpm db-seed
+
       - name: Run integration tests
         run: pnpm test:integration
 
