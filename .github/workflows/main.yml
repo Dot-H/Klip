@@ -20,6 +20,7 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/klip_test
+      NEON_AUTH_BASE_URL: http://localhost:3000
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
