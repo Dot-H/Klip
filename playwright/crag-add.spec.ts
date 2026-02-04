@@ -27,10 +27,12 @@ test.describe('Ajout de sites - Affichage du bouton', () => {
 test.describe('Site vide - Affichage du message et bouton', () => {
   test('affiche un message et un bouton d\'ajout quand le site n\'a pas de secteurs', async ({ siteVideCragPage }) => {
     // Vérifie le message
-    await expect(siteVideCragPage.getByText('Aucun secteur répertorié sur ce site')).toBeVisible();
+    const emptyMessage = siteVideCragPage.getByText('Aucun secteur répertorié sur ce site');
+    await expect(emptyMessage).toBeVisible();
 
-    // Vérifie le bouton d'ajout (désactivé car non connecté)
-    const addButton = siteVideCragPage.getByRole('button', { name: /Ajouter un secteur/i });
+    // Vérifie le bouton d'ajout standalone (dans la zone du message vide)
+    const emptyStateSection = siteVideCragPage.locator('div').filter({ hasText: /Aucun secteur répertorié sur ce site/ }).first();
+    const addButton = emptyStateSection.getByRole('button', { name: /Ajouter un secteur/i });
     await expect(addButton).toBeVisible();
     await expect(addButton).toBeDisabled();
   });
