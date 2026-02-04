@@ -58,9 +58,18 @@ export default async function CragPage({ params }: CragPageProps) {
         <SectorAddButton cragId={cragId} cragName={crag.name} />
       </Stack>
 
-      {crag.sectors.map((sector) => (
-        <RouteList key={sector.id} sector={sector} />
-      ))}
+      {crag.sectors.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+            Aucun secteur répertorié sur ce site
+          </Typography>
+          <SectorAddButton cragId={cragId} cragName={crag.name} variant="standalone" />
+        </Box>
+      ) : (
+        crag.sectors.map((sector) => (
+          <RouteList key={sector.id} sector={sector} />
+        ))
+      )}
     </Box>
   );
 }

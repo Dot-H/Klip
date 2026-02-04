@@ -12,6 +12,8 @@ type NavigationFixtures = {
   buouxCragPage: Page;
   /** Navigate to Verdon crag page */
   verdonCragPage: Page;
+  /** Navigate to Site vide crag page (empty crag with no sectors) */
+  siteVideCragPage: Page;
   /** Navigate to Rose des Sables route (simple route in Buoux) */
   roseDesSablesPage: Page;
   /** Navigate to Tabou au Nord route (route with reports in Buoux) */
@@ -67,6 +69,11 @@ export const test = base.extend<NavigationFixtures>({
 
   verdonCragPage: async ({ page }, use) => {
     await navigateToCrag(page, 'Verdon');
+    await use(page);
+  },
+
+  siteVideCragPage: async ({ page }, use) => {
+    await navigateToCrag(page, 'Site vide');
     await use(page);
   },
 

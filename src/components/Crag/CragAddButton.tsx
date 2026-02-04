@@ -14,23 +14,20 @@ import {
   CircularProgress,
   Box,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import type { UserRole } from '~/lib/roles';
 
-interface SectorAddButtonProps {
-  cragId: string;
-  cragName: string;
-  variant?: 'header' | 'standalone';
-}
-
-export function SectorAddButton({ cragId, cragName, variant = 'header' }: SectorAddButtonProps) {
+export function CragAddButton() {
   const router = useRouter();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [convention, setConvention] = useState(false);
 
   // Fetch user role on mount
   useEffect(() => {
@@ -50,6 +47,7 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
 
   const handleOpen = () => {
     setName('');
+    setConvention(false);
     setError(null);
     setDialogOpen(true);
   };
@@ -70,15 +68,18 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
         return;
       }
 
-      const response = await fetch(`/api/crag/${cragId}/sectors`, {
+      const response = await fetch('/api/crags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          convention: convention || null,
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create sector');
+        throw new Error(data.error || 'Failed to create crag');
       }
 
       handleClose();
@@ -90,29 +91,11 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
     }
   };
 
-  const standaloneButton = (
-    <Tooltip
-      title={canAdd ? '' : 'Seuls les ouvreurs peuvent ajouter des secteurs'}
-      arrow
-    >
-      <Box component="span">
-        <Button
-          variant="contained"
-          disabled={!canAdd}
-          onClick={handleOpen}
-          startIcon={<AddIcon />}
-        >
-          Ajouter un secteur
-        </Button>
-      </Box>
-    </Tooltip>
-  );
-
-  const headerButton = (
+  return (
     <>
       {/* Mobile: icon only */}
       <Tooltip
-        title={canAdd ? 'Ajouter un secteur' : 'Seuls les ouvreurs peuvent ajouter des secteurs'}
+        title={canAdd ? 'Ajouter un site' : 'Seuls les ouvreurs peuvent ajouter des sites'}
         arrow
       >
         <Box component="span" sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
@@ -132,7 +115,7 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
 
       {/* Desktop: button with text */}
       <Tooltip
-        title={canAdd ? '' : 'Seuls les ouvreurs peuvent ajouter des secteurs'}
+        title={canAdd ? '' : 'Seuls les ouvreurs peuvent ajouter des sites'}
         arrow
       >
         <Box component="span" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
@@ -146,19 +129,13 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
               '&:hover': { bgcolor: 'action.hover' },
             }}
           >
-            Ajouter un secteur
+            Ajouter un site
           </Button>
         </Box>
       </Tooltip>
-    </>
-  );
-
-  return (
-    <>
-      {variant === 'standalone' ? standaloneButton : headerButton}
 
       <Dialog open={dialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Ajouter un secteur - {cragName}</DialogTitle>
+        <DialogTitle>Ajouter un site d'escalade</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {error && (
@@ -168,12 +145,22 @@ export function SectorAddButton({ cragId, cragName, variant = 'header' }: Sector
             )}
 
             <TextField
-              label="Nom du secteur"
+              label="Nom du site"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               fullWidth
               autoFocus
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={convention}
+                  onChange={(e) => setConvention(e.target.checked)}
+                />
+              }
+              label="Site conventionné"
             />
           </Box>
         </DialogContent>

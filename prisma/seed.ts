@@ -103,6 +103,14 @@ async function main() {
     },
   });
 
+  // Empty crag (no sectors) for testing empty state
+  const siteVide = await prisma.crag.create({
+    data: {
+      name: 'Site vide',
+      convention: null,
+    },
+  });
+
   // Buoux sectors and routes
   const styx = await prisma.sector.create({
     data: {
@@ -372,7 +380,7 @@ async function main() {
   console.log('Seed completed successfully!');
   console.log('Created:');
   console.log('- 3 users (admin, route setter, contributor)');
-  console.log('- 3 crags (Buoux, Céüse, Verdon)');
+  console.log('- 4 crags (Buoux, Céüse, Verdon, Site vide)');
   console.log('- 4 sectors');
   console.log('- 8 routes (including 2 multi-pitch, 2 with missing data)');
   console.log('- 12 pitches');
