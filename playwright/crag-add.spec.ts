@@ -30,11 +30,10 @@ test.describe('Site vide - Affichage du message et bouton', () => {
     const emptyMessage = siteVideCragPage.getByText('Aucun secteur répertorié sur ce site');
     await expect(emptyMessage).toBeVisible();
 
-    // Vérifie le bouton d'ajout standalone (dans la zone du message vide)
-    const emptyStateSection = siteVideCragPage.locator('div').filter({ hasText: /Aucun secteur répertorié sur ce site/ }).first();
-    const addButton = emptyStateSection.getByRole('button', { name: /Ajouter un secteur/i });
-    await expect(addButton).toBeVisible();
-    await expect(addButton).toBeDisabled();
+    // Vérifie le bouton d'ajout standalone (bouton contained, pas le bouton text du header)
+    const standaloneButton = siteVideCragPage.locator('button.MuiButton-contained', { hasText: /Ajouter un secteur/i });
+    await expect(standaloneButton).toBeVisible();
+    await expect(standaloneButton).toBeDisabled();
   });
 });
 
