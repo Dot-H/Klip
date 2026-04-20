@@ -1,0 +1,20 @@
+services:
+  postgres-dev:
+    image: postgres:18-alpine
+    container_name: klip-dev-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: klip_dev
+    ports:
+      - "5434:5432"
+    volumes:
+      - klip-dev-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d klip_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  klip-dev-db:

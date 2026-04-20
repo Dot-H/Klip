@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
 // Determine database URL: prefer DIRECT_DATABASE_URL for migrations (Neon pooled connections),
