@@ -43,7 +43,7 @@ export function CragCard({ crag }: CragCardProps) {
 
           {crag.convention !== null && (
             <Chip
-              label={crag.convention ? 'Convention signée' : 'Sans convention'}
+              label={crag.convention ? 'Conventionné' : 'Sans convention'}
               size="small"
               color={crag.convention ? 'success' : 'default'}
               sx={{ mt: 1 }}

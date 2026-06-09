@@ -132,7 +132,7 @@ test.describe('Visual Elements', () => {
 
   test('convention badges display correctly on home page', async ({ homePage }) => {
     // Buoux has convention signed
-    await expect(homePage.getByText('Convention signée').first()).toBeVisible();
+    await expect(homePage.getByText('Conventionné').first()).toBeVisible();
 
     // Verdon has no convention
     await expect(homePage.getByText('Sans convention')).toBeVisible();

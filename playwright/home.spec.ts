@@ -25,7 +25,7 @@ test.describe('Page d\'accueil', () => {
 
   test('affiche le badge de convention', async ({ homePage }) => {
     // Buoux has convention signed
-    await expect(homePage.getByText('Convention signée').first()).toBeVisible();
+    await expect(homePage.getByText('Conventionné').first()).toBeVisible();
 
     // Verdon has no convention
     await expect(homePage.getByText('Sans convention')).toBeVisible();
