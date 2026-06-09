@@ -1,16 +1,17 @@
 import { test, expect } from './fixtures';
 
-test.describe('Page de création de rapport', () => {
+test.describe('Formulaire de rapport (depuis une voie)', () => {
   test('affiche le titre de la page', async ({ roseDesSablesReportPage }) => {
     await expect(
       roseDesSablesReportPage.getByRole('heading', { name: /Nouveau rapport de maintenance/i }),
     ).toBeVisible();
   });
 
-  test('affiche les informations de la voie', async ({ roseDesSablesReportPage }) => {
-    await expect(roseDesSablesReportPage.getByText(/Rose des Sables/i).first()).toBeVisible();
-    await expect(roseDesSablesReportPage.getByText(/Styx/i).first()).toBeVisible();
-    await expect(roseDesSablesReportPage.getByText(/Buoux/i).first()).toBeVisible();
+  test('la voie est pré-sélectionnée', async ({ roseDesSablesReportPage }) => {
+    await expect(roseDesSablesReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
+    await expect(
+      roseDesSablesReportPage.locator('.MuiChip-root', { hasText: '1. Rose des Sables' }),
+    ).toBeVisible();
   });
 
   test('affiche les breadcrumbs', async ({ roseDesSablesReportPage }) => {
@@ -71,9 +72,9 @@ test.describe('Page de création de rapport', () => {
     await expect(roseDesSablesReportPage.getByText(/Connexion requise/i)).toBeVisible();
   });
 
-  test('breadcrumb retourne vers la route', async ({ roseDesSablesReportPage }) => {
-    await roseDesSablesReportPage.getByRole('link', { name: /Rose des Sables/i }).click();
-    await expect(roseDesSablesReportPage).toHaveURL(/\/route\//);
+  test('breadcrumb retourne vers le site', async ({ roseDesSablesReportPage }) => {
+    await roseDesSablesReportPage.getByRole('link', { name: 'Buoux' }).first().click();
+    await expect(roseDesSablesReportPage).toHaveURL(/\/crag\//);
     await expect(roseDesSablesReportPage).not.toHaveURL(/\/report/);
   });
 });
@@ -116,22 +117,30 @@ test.describe('Persistance du brouillon de rapport', () => {
   });
 });
 
-test.describe('Rapport multi-longueurs', () => {
-  test('affiche la section "Longueurs concernées"', async ({ pichenibuleReportPage }) => {
-    await expect(pichenibuleReportPage.getByText(/Longueurs concernées/i)).toBeVisible();
+test.describe('Pré-sélection d\'une voie multi-longueurs', () => {
+  test('toutes les longueurs de la voie sont pré-sélectionnées', async ({ pichenibuleReportPage }) => {
+    await expect(pichenibuleReportPage.getByText(/3 longueurs sélectionnées/i)).toBeVisible();
+    await expect(
+      pichenibuleReportPage.locator('.MuiChip-root', { hasText: '1. Pichenibule · L1' }),
+    ).toBeVisible();
+    await expect(
+      pichenibuleReportPage.locator('.MuiChip-root', { hasText: '1. Pichenibule · L2' }),
+    ).toBeVisible();
+    await expect(
+      pichenibuleReportPage.locator('.MuiChip-root', { hasText: '1. Pichenibule · L3' }),
+    ).toBeVisible();
   });
 
-  test('affiche les boutons de sélection de longueur', async ({ pichenibuleReportPage }) => {
-    await expect(pichenibuleReportPage.getByRole('button', { name: /L1/i })).toBeVisible();
-    await expect(pichenibuleReportPage.getByRole('button', { name: /L2/i })).toBeVisible();
-    await expect(pichenibuleReportPage.getByRole('button', { name: /L3/i })).toBeVisible();
-  });
+  test('peut retirer une longueur via son chip', async ({ pichenibuleReportPage }) => {
+    await pichenibuleReportPage
+      .locator('.MuiChip-root', { hasText: '1. Pichenibule · L2' })
+      .locator('.MuiChip-deleteIcon')
+      .click();
 
-  test('peut sélectionner plusieurs longueurs', async ({ pichenibuleReportPage }) => {
-    const l2Button = pichenibuleReportPage.getByRole('button', { name: /L2/i });
-    await l2Button.click();
-
-    await expect(l2Button).toHaveAttribute('aria-pressed', 'true');
+    await expect(pichenibuleReportPage.getByText(/2 longueurs sélectionnées/i)).toBeVisible();
+    await expect(
+      pichenibuleReportPage.locator('.MuiChip-root', { hasText: '1. Pichenibule · L2' }),
+    ).toHaveCount(0);
   });
 });
 
@@ -161,19 +170,23 @@ test.describe('Navigation depuis le bouton rapport', () => {
   test('le bouton "Nouveau rapport" navigue vers le formulaire', async ({ tabouAuNordPage }) => {
     await tabouAuNordPage.getByRole('link', { name: /Nouveau rapport/i }).click();
 
-    await expect(tabouAuNordPage).toHaveURL(/\/report\?pitchId=/);
+    await expect(tabouAuNordPage).toHaveURL(/\/crag\/[^/]+\/report\?routeId=/);
     await expect(
-      tabouAuNordPage.getByRole('heading', { name: /Nouveau rapport/i }),
+      tabouAuNordPage.getByRole('heading', { name: /Nouveau rapport de maintenance/i }),
+    ).toBeVisible();
+    await expect(
+      tabouAuNordPage.locator('.MuiChip-root', { hasText: '2. Tabou au Nord' }),
     ).toBeVisible();
   });
 
   test('clic sur longueur spécifique pré-sélectionne cette longueur', async ({ pichenibulePage }) => {
     await pichenibulePage.getByRole('link', { name: /L2.*6c/i }).click();
 
-    await expect(pichenibulePage).toHaveURL(/\/report\?pitchId=/);
-
-    const l2Button = pichenibulePage.getByRole('button', { name: /L2/i });
-    await expect(l2Button).toHaveAttribute('aria-pressed', 'true');
+    await expect(pichenibulePage).toHaveURL(/\/crag\/[^/]+\/report\?pitchId=/);
+    await expect(pichenibulePage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
+    await expect(
+      pichenibulePage.locator('.MuiChip-root', { hasText: '1. Pichenibule · L2' }),
+    ).toBeVisible();
   });
 });
 
@@ -183,7 +196,7 @@ test.describe('Rapport groupé (batch)', () => {
 
     await expect(buouxCragPage).toHaveURL(/\/crag\/[^/]+\/report/);
     await expect(
-      buouxCragPage.getByRole('heading', { name: /Rapport groupé/i, level: 1 }),
+      buouxCragPage.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
     ).toBeVisible();
   });
 

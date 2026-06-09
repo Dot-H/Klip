@@ -18,8 +18,12 @@ export const REPORT_DRAFT_STORAGE_KEY = 'klip:report-draft';
 /** Shape of the persisted draft. */
 export const reportDraftSchema = z
   .object({
-    routeId: z.string().min(1),
-    selectedPitchIds: z.array(z.string().min(1)).min(1),
+    cragId: z.string().min(1),
+    // The pitches the form was opened with (e.g. the route behind "Nouveau
+    // rapport"). Used to scope a restored draft to the entry point it came
+    // from, so a half-filled report only reappears where it was started.
+    origin: z.array(z.string().min(1)),
+    selectedPitchIds: z.array(z.string().min(1)),
     problemDetected: z.boolean(),
     faultyBolt: z.boolean(),
     faultyAnchor: z.boolean(),

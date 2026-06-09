@@ -116,10 +116,10 @@ export const test = base.extend<NavigationFixtures>({
     await page.getByRole('link', { name: /Rose des Sables/i }).click();
     await page.waitForURL(/\/route\//, { timeout: 30000 });
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
-    await page.waitForURL(/\/report\?pitchId=/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible({
-      timeout: 30000,
-    });
+    await page.waitForURL(/\/crag\/[^/]+\/report\?routeId=/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 
@@ -128,10 +128,10 @@ export const test = base.extend<NavigationFixtures>({
     await page.getByRole('link', { name: /Pichenibule/i }).click();
     await page.waitForURL(/\/route\//, { timeout: 30000 });
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
-    await page.waitForURL(/\/report\?pitchId=/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible({
-      timeout: 30000,
-    });
+    await page.waitForURL(/\/crag\/[^/]+\/report\?routeId=/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 
@@ -139,9 +139,9 @@ export const test = base.extend<NavigationFixtures>({
     await navigateToCrag(page, 'Buoux');
     await page.getByRole('link', { name: /Rapport groupé/i }).click();
     await page.waitForURL(/\/crag\/[^/]+\/report/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Rapport groupé/i, level: 1 })).toBeVisible({
-      timeout: 30000,
-    });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 
@@ -149,9 +149,9 @@ export const test = base.extend<NavigationFixtures>({
     await navigateToCrag(page, 'Verdon');
     await page.getByRole('link', { name: /Rapport groupé/i }).click();
     await page.waitForURL(/\/crag\/[^/]+\/report/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Rapport groupé/i, level: 1 })).toBeVisible({
-      timeout: 30000,
-    });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 });
