@@ -2,6 +2,15 @@
 
 This file contains instructions for Claude Code when working on this project.
 
+## Design
+
+- The design should be optimised for mobile usage. Prioritise mobile layouts first, ensuring components stack and resize gracefully on small screens before considering larger viewports.
+
+## Git Conventions
+
+- Do NOT add `Co-Authored-By` lines or any Claude/AI references in commit messages or PR descriptions.
+- Do NOT add a "Test plan" section in PR descriptions.
+
 ## Running E2E Tests
 
 When running e2e tests locally, always run them in headless mode to prevent browser windows from opening:

@@ -114,7 +114,8 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
           <Box
             sx={{
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'stretch', sm: 'center' },
               justifyContent: 'space-between',
               gap: 2,
               mb: 4,
@@ -153,6 +154,11 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
                 size="small"
                 startIcon={<LoginIcon />}
                 onClick={() => setAuthModalOpen(true)}
+                sx={{
+                  flexShrink: 0,
+                  alignSelf: { xs: 'flex-start', sm: 'auto' },
+                  whiteSpace: 'nowrap',
+                }}
               >
                 Se connecter
               </Button>
