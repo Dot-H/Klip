@@ -6,7 +6,7 @@ test.describe('Page de détail d\'un crag', () => {
     await expect(buouxCragPage.getByRole('heading', { name: 'Buoux', level: 1 })).toBeVisible();
 
     // Check convention badge
-    await expect(buouxCragPage.getByText('Convention signée')).toBeVisible();
+    await expect(buouxCragPage.getByText('Conventionné')).toBeVisible();
 
     // Check sector and route count
     await expect(buouxCragPage.getByText(/2 secteurs/)).toBeVisible();
