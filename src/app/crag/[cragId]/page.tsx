@@ -26,49 +26,39 @@ export default async function CragPage({ params }: CragPageProps) {
       <Breadcrumbs items={[{ label: crag.name }]} />
 
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        justifyContent="space-between"
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        spacing={2}
-        sx={{ mb: 3 }}
+        direction="row"
+        alignItems="center"
+        spacing={{ xs: 1, sm: 2 }}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={{ xs: 1, sm: 2 }}
-          flexWrap="wrap"
-          useFlexGap
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
         >
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
-          >
-            {crag.name}
-          </Typography>
-          {crag.convention !== null && (
-            <Chip
-              label={crag.convention ? 'Conventionné' : 'Sans convention'}
-              size="small"
-              color={crag.convention ? 'success' : 'default'}
-            />
-          )}
-        </Stack>
-        {totalRoutes > 0 && (
-          <LinkButton
-            href={`/crag/${cragId}/report`}
-            variant="contained"
-            startIcon={<PlaylistAddCheckIcon />}
-            sx={{
-              alignSelf: { xs: 'stretch', sm: 'auto' },
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Rapport groupé
-          </LinkButton>
+          {crag.name}
+        </Typography>
+        {crag.convention !== null && (
+          <Chip
+            label={crag.convention ? 'Conventionné' : 'Sans convention'}
+            size="small"
+            color={crag.convention ? 'success' : 'default'}
+          />
         )}
       </Stack>
+
+      {totalRoutes > 0 && (
+        <LinkButton
+          href={`/crag/${cragId}/report`}
+          variant="contained"
+          startIcon={<PlaylistAddCheckIcon />}
+          sx={{ mb: 3, whiteSpace: 'nowrap' }}
+        >
+          Rapport groupé
+        </LinkButton>
+      )}
 
       <Stack
         direction="row"
