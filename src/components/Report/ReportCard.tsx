@@ -40,6 +40,13 @@ interface ReportCardProps {
   currentUserEmail?: string;
 }
 
+const PROBLEM_DETAILS = [
+  { name: 'faultyBolt', label: 'Point défectueux' },
+  { name: 'faultyAnchor', label: 'Relais défectueux' },
+  { name: 'dangerousClipping', label: 'Clippage dangereux' },
+  { name: 'looseRock', label: 'Rocher instable' },
+] as const;
+
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -67,6 +74,10 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
 
   const [formData, setFormData] = useState({
     problemDetected: report.problemDetected ?? false,
+    faultyBolt: report.faultyBolt ?? false,
+    faultyAnchor: report.faultyAnchor ?? false,
+    dangerousClipping: report.dangerousClipping ?? false,
+    looseRock: report.looseRock ?? false,
     visualCheck: report.visualCheck ?? false,
     anchorCheck: report.anchorCheck ?? false,
     cleaningDone: report.cleaningDone ?? false,
@@ -97,6 +108,10 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
+      // Clear problem details when the problem flag is turned off
+      ...(name === 'problemDetected' && !checked
+        ? { faultyBolt: false, faultyAnchor: false, dangerousClipping: false, looseRock: false }
+        : {}),
     }));
   };
 
@@ -188,13 +203,24 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
           </Box>
 
           {report.problemDetected && (
-            <Chip
-              icon={<WarningAmberIcon />}
-              label="Problème détecté"
-              size="small"
-              color="warning"
-              sx={{ mb: 2, fontWeight: 600 }}
-            />
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+              <Chip
+                icon={<WarningAmberIcon />}
+                label="Problème détecté"
+                size="small"
+                color="warning"
+                sx={{ fontWeight: 600 }}
+              />
+              {PROBLEM_DETAILS.filter(({ name }) => report[name]).map(({ name, label }) => (
+                <Chip
+                  key={name}
+                  label={label}
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                />
+              ))}
+            </Stack>
           )}
 
           {completedChecks.length > 0 && (
@@ -251,6 +277,24 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
                 </Box>
               }
             />
+            {formData.problemDetected && (
+              <FormGroup sx={{ pl: 4 }}>
+                {PROBLEM_DETAILS.map(({ name, label }) => (
+                  <FormControlLabel
+                    key={name}
+                    control={
+                      <Checkbox
+                        name={name}
+                        checked={formData[name]}
+                        onChange={handleChange}
+                        color="warning"
+                      />
+                    }
+                    label={label}
+                  />
+                ))}
+              </FormGroup>
+            )}
           </Box>
           <FormGroup sx={{ mt: 1 }}>
             <FormControlLabel

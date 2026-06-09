@@ -105,6 +105,10 @@ model Report {
   createdAt           DateTime @default(now()) @map("created_at")
   comment             String?
   problemDetected     Boolean? @map("problem_detected")
+  faultyBolt          Boolean? @map("faulty_bolt")
+  faultyAnchor        Boolean? @map("faulty_anchor")
+  dangerousClipping   Boolean? @map("dangerous_clipping")
+  looseRock           Boolean? @map("loose_rock")
   visualCheck         Boolean? @map("visual_check")
   anchorCheck         Boolean? @map("anchor_check")
   cleaningDone        Boolean? @map("cleaning_done")

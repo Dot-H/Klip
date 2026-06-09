@@ -37,6 +37,13 @@ interface ReportFormProps {
   pitches: Pitch[];
 }
 
+const PROBLEM_DETAILS = [
+  { name: 'faultyBolt', label: 'Point défectueux' },
+  { name: 'faultyAnchor', label: 'Relais défectueux' },
+  { name: 'dangerousClipping', label: 'Clippage dangereux' },
+  { name: 'looseRock', label: 'Rocher instable' },
+] as const;
+
 export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
@@ -47,6 +54,10 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
 
   const [formData, setFormData] = useState({
     problemDetected: false,
+    faultyBolt: false,
+    faultyAnchor: false,
+    dangerousClipping: false,
+    looseRock: false,
     visualCheck: false,
     anchorCheck: false,
     cleaningDone: false,
@@ -63,6 +74,10 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
+      // Clear problem details when the problem flag is turned off
+      ...(name === 'problemDetected' && !checked
+        ? { faultyBolt: false, faultyAnchor: false, dangerousClipping: false, looseRock: false }
+        : {}),
     }));
   };
 
@@ -224,6 +239,24 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
                 </Box>
               }
             />
+            {formData.problemDetected && (
+              <FormGroup sx={{ pl: 4, mt: 1 }}>
+                {PROBLEM_DETAILS.map(({ name, label }) => (
+                  <FormControlLabel
+                    key={name}
+                    control={
+                      <Checkbox
+                        name={name}
+                        checked={formData[name]}
+                        onChange={handleChange}
+                        color="warning"
+                      />
+                    }
+                    label={label}
+                  />
+                ))}
+              </FormGroup>
+            )}
           </Box>
 
           <Typography variant="h6" gutterBottom>
