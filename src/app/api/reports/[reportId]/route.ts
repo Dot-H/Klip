@@ -6,6 +6,7 @@ import { getReport, updateReport, deleteReport } from '~/lib/data';
 export const dynamic = 'force-dynamic';
 
 const updateSchema = z.object({
+  problemDetected: z.boolean().optional(),
   visualCheck: z.boolean().optional(),
   anchorCheck: z.boolean().optional(),
   cleaningDone: z.boolean().optional(),

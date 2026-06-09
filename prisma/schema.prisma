@@ -104,6 +104,7 @@ model Report {
   reporterId          String   @map("reporter_id")
   createdAt           DateTime @default(now()) @map("created_at")
   comment             String?
+  problemDetected     Boolean? @map("problem_detected")
   visualCheck         Boolean? @map("visual_check")
   anchorCheck         Boolean? @map("anchor_check")
   cleaningDone        Boolean? @map("cleaning_done")

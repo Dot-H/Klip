@@ -48,6 +48,7 @@ export interface PitchWithReports {
     id: string;
     createdAt: Date;
     comment: string | null;
+    problemDetected: boolean | null;
     visualCheck: boolean | null;
     anchorCheck: boolean | null;
     cleaningDone: boolean | null;
@@ -92,6 +93,7 @@ export interface CreateReportInput {
   firstname: string;
   lastname: string;
   email: string;
+  problemDetected?: boolean;
   visualCheck?: boolean;
   anchorCheck?: boolean;
   cleaningDone?: boolean;
@@ -104,6 +106,7 @@ export interface CreateReportWithAuthInput {
   pitchId: string;
   userEmail: string;
   userName?: string;
+  problemDetected?: boolean;
   visualCheck?: boolean;
   anchorCheck?: boolean;
   cleaningDone?: boolean;
@@ -269,6 +272,7 @@ export async function getRouteWithReports(
         id: report.id,
         createdAt: report.createdAt,
         comment: report.comment,
+        problemDetected: report.problemDetected,
         visualCheck: report.visualCheck,
         anchorCheck: report.anchorCheck,
         cleaningDone: report.cleaningDone,
@@ -334,6 +338,7 @@ export async function createReport(input: CreateReportInput): Promise<string> {
     data: {
       reportedPitchId: input.pitchId,
       reporterId: user.id,
+      problemDetected: input.problemDetected ?? null,
       visualCheck: input.visualCheck ?? null,
       anchorCheck: input.anchorCheck ?? null,
       cleaningDone: input.cleaningDone ?? null,
@@ -366,6 +371,7 @@ export async function getReport(reportId: string) {
 export async function updateReport(
   reportId: string,
   data: {
+    problemDetected?: boolean;
     visualCheck?: boolean;
     anchorCheck?: boolean;
     cleaningDone?: boolean;
@@ -377,6 +383,7 @@ export async function updateReport(
   return prisma.report.update({
     where: { id: reportId },
     data: {
+      problemDetected: data.problemDetected ?? null,
       visualCheck: data.visualCheck ?? null,
       anchorCheck: data.anchorCheck ?? null,
       cleaningDone: data.cleaningDone ?? null,
@@ -522,6 +529,7 @@ export async function createReportWithAuth(
     data: {
       reportedPitchId: input.pitchId,
       reporterId: user.id,
+      problemDetected: input.problemDetected ?? null,
       visualCheck: input.visualCheck ?? null,
       anchorCheck: input.anchorCheck ?? null,
       cleaningDone: input.cleaningDone ?? null,

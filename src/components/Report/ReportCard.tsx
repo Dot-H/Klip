@@ -26,6 +26,7 @@ import AnchorIcon from '@mui/icons-material/Anchor';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import BuildIcon from '@mui/icons-material/Build';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { USER_ROLE_LABELS, type UserRole } from '~/lib/roles';
@@ -65,6 +66,7 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    problemDetected: report.problemDetected ?? false,
     visualCheck: report.visualCheck ?? false,
     anchorCheck: report.anchorCheck ?? false,
     cleaningDone: report.cleaningDone ?? false,
@@ -185,6 +187,16 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
             </Box>
           </Box>
 
+          {report.problemDetected && (
+            <Chip
+              icon={<WarningAmberIcon />}
+              label="Problème détecté"
+              size="small"
+              color="warning"
+              sx={{ mb: 2, fontWeight: 600 }}
+            />
+          )}
+
           {completedChecks.length > 0 && (
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
               {completedChecks.map((check) => (
@@ -212,6 +224,34 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Modifier le rapport</DialogTitle>
         <DialogContent>
+          <Box
+            sx={{
+              mt: 1,
+              mb: 1,
+              p: 1.5,
+              bgcolor: 'warning.50',
+              borderRadius: 1,
+              border: 2,
+              borderColor: 'warning.main',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="problemDetected"
+                  checked={formData.problemDetected}
+                  onChange={handleChange}
+                  color="warning"
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <WarningAmberIcon color="warning" />
+                  <Typography fontWeight={600}>Problème détecté</Typography>
+                </Box>
+              }
+            />
+          </Box>
           <FormGroup sx={{ mt: 1 }}>
             <FormControlLabel
               control={

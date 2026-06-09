@@ -21,6 +21,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
 
@@ -45,6 +46,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const [selectedPitchIds, setSelectedPitchIds] = useState<string[]>([pitchId]);
 
   const [formData, setFormData] = useState({
+    problemDetected: false,
     visualCheck: false,
     anchorCheck: false,
     cleaningDone: false,
@@ -195,6 +197,34 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
               </ToggleButtonGroup>
             </>
           )}
+
+          <Box
+            sx={{
+              mb: 4,
+              p: 2,
+              bgcolor: 'warning.50',
+              borderRadius: 1,
+              border: 2,
+              borderColor: 'warning.main',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="problemDetected"
+                  checked={formData.problemDetected}
+                  onChange={handleChange}
+                  color="warning"
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <WarningAmberIcon color="warning" />
+                  <Typography fontWeight={600}>Problème détecté</Typography>
+                </Box>
+              }
+            />
+          </Box>
 
           <Typography variant="h6" gutterBottom>
             Actions réalisées
