@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography, Chip, Stack } from '@mui/material';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import { getCragWithRoutes } from '~/lib/data';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { RouteList } from '~/components/Route/RouteList';
 import { SectorAddButton } from '~/components/Sector/SectorAddButton';
+import { LinkButton } from '~/components/common/LinkButton';
 
 interface CragPageProps {
   params: Promise<{ cragId: string }>;
@@ -46,16 +48,29 @@ export default async function CragPage({ params }: CragPageProps) {
       </Stack>
 
       <Stack
-        direction="row"
-        alignItems="center"
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         spacing={2}
         sx={{ mb: { xs: 2, sm: 4 } }}
       >
-        <Typography variant="body1" color="text.secondary">
-          {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
-          {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
-        </Typography>
-        <SectorAddButton cragId={cragId} cragName={crag.name} />
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Typography variant="body1" color="text.secondary">
+            {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
+            {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
+          </Typography>
+          <SectorAddButton cragId={cragId} cragName={crag.name} />
+        </Stack>
+        {totalRoutes > 0 && (
+          <LinkButton
+            href={`/crag/${cragId}/report`}
+            variant="outlined"
+            size="small"
+            startIcon={<PlaylistAddCheckIcon />}
+            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+          >
+            Rapport groupé
+          </LinkButton>
+        )}
       </Stack>
 
       {crag.sectors.length === 0 ? (

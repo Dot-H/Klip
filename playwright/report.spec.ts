@@ -176,3 +176,58 @@ test.describe('Navigation depuis le bouton rapport', () => {
     await expect(l2Button).toHaveAttribute('aria-pressed', 'true');
   });
 });
+
+test.describe('Rapport groupé (batch)', () => {
+  test('le bouton "Rapport groupé" navigue vers le formulaire', async ({ buouxCragPage }) => {
+    await buouxCragPage.getByRole('link', { name: /Rapport groupé/i }).click();
+
+    await expect(buouxCragPage).toHaveURL(/\/crag\/[^/]+\/report/);
+    await expect(
+      buouxCragPage.getByRole('heading', { name: /Rapport groupé/i, level: 1 }),
+    ).toBeVisible();
+  });
+
+  test('affiche les secteurs et voies du site', async ({ buouxBatchReportPage }) => {
+    await expect(buouxBatchReportPage.getByText(/Voies concernées/i)).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('Styx')).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('Bout du Monde')).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('1. Rose des Sables')).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('2. Tabou au Nord')).toBeVisible();
+  });
+
+  test('réutilise les champs du rapport (actions, commentaire)', async ({ buouxBatchReportPage }) => {
+    await expect(buouxBatchReportPage.getByText(/Actions réalisées/i)).toBeVisible();
+    await expect(
+      buouxBatchReportPage.getByRole('checkbox', { name: /Contrôle visuel/i }),
+    ).toBeVisible();
+    await expect(buouxBatchReportPage.getByLabel(/Commentaire/i)).toBeVisible();
+  });
+
+  test('le bouton envoyer est désactivé sans authentification', async ({ buouxBatchReportPage }) => {
+    await expect(
+      buouxBatchReportPage.getByRole('button', { name: /Envoyer le rapport/i }),
+    ).toBeDisabled();
+  });
+
+  test('sélectionner une voie met à jour le compteur', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage.getByText('1. Rose des Sables').click();
+
+    await expect(buouxBatchReportPage.getByText(/1 voie sélectionnée/i)).toBeVisible();
+    await expect(
+      buouxBatchReportPage.getByRole('button', { name: /Envoyer le rapport pour 1 voie/i }),
+    ).toBeVisible();
+  });
+
+  test('sélectionner un secteur sélectionne toutes ses voies', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage.getByText('Styx').click();
+
+    await expect(buouxBatchReportPage.getByText(/2 voies sélectionnées/i)).toBeVisible();
+  });
+
+  test('clic sur "Se connecter" ouvre la modal d\'authentification', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage.getByRole('button', { name: /Se connecter/i }).click();
+
+    await expect(buouxBatchReportPage.getByRole('dialog')).toBeVisible();
+    await expect(buouxBatchReportPage.getByText(/Connexion requise/i)).toBeVisible();
+  });
+});

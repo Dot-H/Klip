@@ -28,6 +28,8 @@ type NavigationFixtures = {
   roseDesSablesReportPage: Page;
   /** Navigate to Pichenibule report form (multi-pitch) */
   pichenibuleReportPage: Page;
+  /** Navigate to Buoux batch report form ("Rapport groupé") */
+  buouxBatchReportPage: Page;
 };
 
 // Helper to wait for page to be ready after navigation
@@ -126,6 +128,16 @@ export const test = base.extend<NavigationFixtures>({
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
     await page.waitForURL(/\/report\?pitchId=/, { timeout: 30000 });
     await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible({
+      timeout: 30000,
+    });
+    await use(page);
+  },
+
+  buouxBatchReportPage: async ({ page }, use) => {
+    await navigateToCrag(page, 'Buoux');
+    await page.getByRole('link', { name: /Rapport groupé/i }).click();
+    await page.waitForURL(/\/crag\/[^/]+\/report/, { timeout: 30000 });
+    await expect(page.getByRole('heading', { name: /Rapport groupé/i, level: 1 })).toBeVisible({
       timeout: 30000,
     });
     await use(page);

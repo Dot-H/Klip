@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
   Button,
-  TextField,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
   Paper,
   Typography,
   Alert,
@@ -18,10 +13,6 @@ import {
   ToggleButtonGroup,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import PersonIcon from '@mui/icons-material/Person';
-import LoginIcon from '@mui/icons-material/Login';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
 import {
@@ -29,6 +20,13 @@ import {
   saveReportDraft,
   clearReportDraft,
 } from '~/lib/reportDraft';
+import { ReporterIdentity } from './ReporterIdentity';
+import { ReportFields } from './ReportFields';
+import {
+  type ReportFormData,
+  DEFAULT_REPORT_FORM_DATA,
+  applyReportFieldChange,
+} from './reportFormData';
 
 interface Pitch {
   id: string;
@@ -42,29 +40,6 @@ interface ReportFormProps {
   pitches: Pitch[];
 }
 
-const PROBLEM_DETAILS = [
-  { name: 'faultyBolt', label: 'Point défectueux' },
-  { name: 'faultyAnchor', label: 'Relais défectueux' },
-  { name: 'dangerousClipping', label: 'Clippage dangereux' },
-  { name: 'looseRock', label: 'Rocher instable' },
-] as const;
-
-const DEFAULT_FORM_DATA = {
-  problemDetected: false,
-  faultyBolt: false,
-  faultyAnchor: false,
-  dangerousClipping: false,
-  looseRock: false,
-  visualCheck: false,
-  anchorCheck: false,
-  cleaningDone: false,
-  trundleDone: false,
-  totalReboltingDone: false,
-  comment: '',
-};
-
-type FormData = typeof DEFAULT_FORM_DATA;
-
 export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
@@ -73,7 +48,9 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
   const [selectedPitchIds, setSelectedPitchIds] = useState<string[]>([pitchId]);
-  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
+  const [formData, setFormData] = useState<ReportFormData>(
+    DEFAULT_REPORT_FORM_DATA,
+  );
   // Becomes true once we've attempted to restore a saved draft. We must not
   // persist before this, otherwise the initial empty state would overwrite a
   // draft saved before the user left to sign in.
@@ -95,7 +72,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
         setSelectedPitchIds(validPitchIds);
       }
       const { routeId: _routeId, selectedPitchIds: _pitchIds, ...rest } = draft;
-      setFormData({ ...DEFAULT_FORM_DATA, ...rest });
+      setFormData({ ...DEFAULT_REPORT_FORM_DATA, ...rest });
     }
     setHydrated(true);
   }, [hydrated, routeId, pitches]);
@@ -120,16 +97,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-      // Clear problem details when the problem flag is turned off
-      ...(name === 'problemDetected' && !checked
-        ? { faultyBolt: false, faultyAnchor: false, dangerousClipping: false, looseRock: false }
-        : {}),
-    }));
+    setFormData((prev) => applyReportFieldChange(prev, e));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -181,59 +149,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
             Vos informations
           </Typography>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'stretch', sm: 'center' },
-              justifyContent: 'space-between',
-              gap: 2,
-              mb: 4,
-              p: 2,
-              bgcolor: isAuthenticated ? 'success.50' : 'grey.100',
-              borderRadius: 1,
-              border: 1,
-              borderColor: isAuthenticated ? 'success.200' : 'grey.300',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {isAuthenticated ? (
-                <CheckCircleIcon color="success" />
-              ) : (
-                <PersonIcon color="action" />
-              )}
-              {session.isPending ? (
-                <CircularProgress size={20} />
-              ) : isAuthenticated && session.data ? (
-                <Typography>
-                  Connecté en tant que{' '}
-                  <strong>
-                    {session.data.user?.name || session.data.user?.email}
-                  </strong>
-                </Typography>
-              ) : (
-                <Typography color="text.secondary">
-                  Vous devez vous connecter pour envoyer le rapport
-                </Typography>
-              )}
-            </Box>
-
-            {!session.isPending && !isAuthenticated && (
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<LoginIcon />}
-                onClick={openAuthModal}
-                sx={{
-                  flexShrink: 0,
-                  alignSelf: { xs: 'flex-start', sm: 'auto' },
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Se connecter
-              </Button>
-            )}
-          </Box>
+          <ReporterIdentity onSignInClick={openAuthModal} />
 
           {pitches.length > 1 && (
             <>
@@ -242,11 +158,16 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
               </Typography>
               <ToggleButtonGroup
                 value={selectedPitchIds}
-                onChange={(_, value: string[]) => value.length > 0 && setSelectedPitchIds(value)}
+                onChange={(_, value: string[]) =>
+                  value.length > 0 && setSelectedPitchIds(value)
+                }
                 sx={{ mb: 4, flexWrap: 'wrap' }}
               >
                 {pitches.map((pitch, index) => {
-                  const details = [pitch.cotation, pitch.length != null ? `${pitch.length}m` : null]
+                  const details = [
+                    pitch.cotation,
+                    pitch.length != null ? `${pitch.length}m` : null,
+                  ]
                     .filter(Boolean)
                     .join(', ');
                   return (
@@ -264,7 +185,8 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
                         },
                       }}
                     >
-                      L{index + 1}{details && ` (${details})`}
+                      L{index + 1}
+                      {details && ` (${details})`}
                     </ToggleButton>
                   );
                 })}
@@ -272,119 +194,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
             </>
           )}
 
-          <Box
-            sx={{
-              mb: 4,
-              p: 2,
-              bgcolor: 'warning.50',
-              borderRadius: 1,
-              border: 2,
-              borderColor: 'warning.main',
-            }}
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="problemDetected"
-                  checked={formData.problemDetected}
-                  onChange={handleChange}
-                  color="warning"
-                />
-              }
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <WarningAmberIcon color="warning" />
-                  <Typography fontWeight={600}>Problème détecté</Typography>
-                </Box>
-              }
-            />
-            {formData.problemDetected && (
-              <FormGroup sx={{ pl: 4, mt: 1 }}>
-                {PROBLEM_DETAILS.map(({ name, label }) => (
-                  <FormControlLabel
-                    key={name}
-                    control={
-                      <Checkbox
-                        name={name}
-                        checked={formData[name]}
-                        onChange={handleChange}
-                        color="warning"
-                      />
-                    }
-                    label={label}
-                  />
-                ))}
-              </FormGroup>
-            )}
-          </Box>
-
-          <Typography variant="h6" gutterBottom>
-            Actions réalisées
-          </Typography>
-
-          <FormGroup sx={{ mb: 3 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="visualCheck"
-                  checked={formData.visualCheck}
-                  onChange={handleChange}
-                />
-              }
-              label="Contrôle visuel effectué"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="anchorCheck"
-                  checked={formData.anchorCheck}
-                  onChange={handleChange}
-                />
-              }
-              label="Ancrages vérifiés"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="cleaningDone"
-                  checked={formData.cleaningDone}
-                  onChange={handleChange}
-                />
-              }
-              label="Nettoyage effectué"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="trundleDone"
-                  checked={formData.trundleDone}
-                  onChange={handleChange}
-                />
-              }
-              label="Purge effectuée"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="totalReboltingDone"
-                  checked={formData.totalReboltingDone}
-                  onChange={handleChange}
-                />
-              }
-              label="Rééquipement total effectué"
-            />
-          </FormGroup>
-
-          <TextField
-            name="comment"
-            label="Commentaire (optionnel)"
-            value={formData.comment}
-            onChange={handleChange}
-            multiline
-            rows={4}
-            fullWidth
-            sx={{ mb: 3 }}
-          />
+          <ReportFields formData={formData} onChange={handleChange} />
 
           <Tooltip
             title={
