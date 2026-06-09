@@ -9,7 +9,8 @@ import {
 } from '../reportDraft';
 
 const validDraft: ReportDraft = {
-  routeId: 'route-1',
+  cragId: 'crag-1',
+  origin: [],
   selectedPitchIds: ['pitch-1', 'pitch-2'],
   problemDetected: true,
   faultyBolt: true,
@@ -56,10 +57,9 @@ describe('deserializeReportDraft - discards anything it cannot read', () => {
     ).toBeNull();
   });
 
-  it('returns null when no pitch is selected', () => {
-    expect(
-      deserializeReportDraft(JSON.stringify({ ...validDraft, selectedPitchIds: [] })),
-    ).toBeNull();
+  it('accepts an empty selection (fields can be drafted before picking pitches)', () => {
+    const empty = { ...validDraft, selectedPitchIds: [] };
+    expect(deserializeReportDraft(JSON.stringify(empty))).toEqual(empty);
   });
 
   it('returns null for a draft of a different (evolved) shape', () => {

@@ -113,7 +113,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
 
         {firstPitchId && (
           <LinkButton
-            href={`/route/${route.id}/report?pitchId=${firstPitchId}`}
+            href={`/crag/${route.sector.crag.id}/report?routeId=${route.id}`}
             variant="contained"
             startIcon={<AddIcon />}
           >
@@ -135,7 +135,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
               return (
                 <Box key={pitch.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <LinkButton
-                    href={`/route/${route.id}/report?pitchId=${pitch.id}`}
+                    href={`/crag/${route.sector.crag.id}/report?pitchId=${pitch.id}`}
                     variant="outlined"
                     size="small"
                     color={hasMissing ? 'warning' : 'primary'}

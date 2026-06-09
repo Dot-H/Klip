@@ -28,6 +28,10 @@ type NavigationFixtures = {
   roseDesSablesReportPage: Page;
   /** Navigate to Pichenibule report form (multi-pitch) */
   pichenibuleReportPage: Page;
+  /** Navigate to Buoux batch report form ("Rapport groupé") */
+  buouxBatchReportPage: Page;
+  /** Navigate to Verdon batch report form (has multi-pitch routes) */
+  verdonBatchReportPage: Page;
 };
 
 // Helper to wait for page to be ready after navigation
@@ -112,10 +116,10 @@ export const test = base.extend<NavigationFixtures>({
     await page.getByRole('link', { name: /Rose des Sables/i }).click();
     await page.waitForURL(/\/route\//, { timeout: 30000 });
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
-    await page.waitForURL(/\/report\?pitchId=/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible({
-      timeout: 30000,
-    });
+    await page.waitForURL(/\/crag\/[^/]+\/report\?routeId=/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 
@@ -124,10 +128,30 @@ export const test = base.extend<NavigationFixtures>({
     await page.getByRole('link', { name: /Pichenibule/i }).click();
     await page.waitForURL(/\/route\//, { timeout: 30000 });
     await page.getByRole('link', { name: /Nouveau rapport/i }).click();
-    await page.waitForURL(/\/report\?pitchId=/, { timeout: 30000 });
-    await expect(page.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible({
-      timeout: 30000,
-    });
+    await page.waitForURL(/\/crag\/[^/]+\/report\?routeId=/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
+    await use(page);
+  },
+
+  buouxBatchReportPage: async ({ page }, use) => {
+    await navigateToCrag(page, 'Buoux');
+    await page.getByRole('link', { name: /Rapport groupé/i }).click();
+    await page.waitForURL(/\/crag\/[^/]+\/report/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
+    await use(page);
+  },
+
+  verdonBatchReportPage: async ({ page }, use) => {
+    await navigateToCrag(page, 'Verdon');
+    await page.getByRole('link', { name: /Rapport groupé/i }).click();
+    await page.waitForURL(/\/crag\/[^/]+\/report/, { timeout: 30000 });
+    await expect(
+      page.getByRole('heading', { name: /Nouveau rapport de maintenance/i, level: 1 }),
+    ).toBeVisible({ timeout: 30000 });
     await use(page);
   },
 });

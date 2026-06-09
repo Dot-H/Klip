@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography, Chip, Stack } from '@mui/material';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import { getCragWithRoutes } from '~/lib/data';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { RouteList } from '~/components/Route/RouteList';
 import { SectorAddButton } from '~/components/Sector/SectorAddButton';
+import { LinkButton } from '~/components/common/LinkButton';
 
 interface CragPageProps {
   params: Promise<{ cragId: string }>;
@@ -24,10 +26,12 @@ export default async function CragPage({ params }: CragPageProps) {
       <Breadcrumbs items={[{ label: crag.name }]} />
 
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        direction="row"
+        alignItems="center"
         spacing={{ xs: 1, sm: 2 }}
-        sx={{ mb: 3 }}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
       >
         <Typography
           variant="h4"
@@ -44,6 +48,17 @@ export default async function CragPage({ params }: CragPageProps) {
           />
         )}
       </Stack>
+
+      {totalRoutes > 0 && (
+        <LinkButton
+          href={`/crag/${cragId}/report`}
+          variant="contained"
+          startIcon={<PlaylistAddCheckIcon />}
+          sx={{ mb: 3, whiteSpace: 'nowrap' }}
+        >
+          Rapport groupé
+        </LinkButton>
+      )}
 
       <Stack
         direction="row"

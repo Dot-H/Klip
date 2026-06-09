@@ -22,7 +22,7 @@ test.describe('Critical User Journeys', () => {
 
     // Click on new report button
     await homePage.getByRole('link', { name: /Nouveau rapport/i }).click();
-    await expect(homePage).toHaveURL(/\/report\?pitchId=/);
+    await expect(homePage).toHaveURL(/\/crag\/[^/]+\/report\?routeId=/);
     await expect(homePage.getByRole('heading', { name: /Nouveau rapport/i })).toBeVisible();
   });
 

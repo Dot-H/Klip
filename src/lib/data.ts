@@ -38,6 +38,31 @@ export interface CragDetail {
   sectors: SectorWithRoutes[];
 }
 
+export interface BatchReportPitch {
+  id: string;
+  cotation: string | null;
+  length: number | null;
+}
+
+export interface BatchReportRoute {
+  id: string;
+  number: number;
+  name: string | null;
+  pitches: BatchReportPitch[];
+}
+
+export interface BatchReportSector {
+  id: string;
+  name: string;
+  routes: BatchReportRoute[];
+}
+
+export interface CragForBatchReport {
+  id: string;
+  name: string;
+  sectors: BatchReportSector[];
+}
+
 export interface PitchWithReports {
   id: string;
   description: string | null;
@@ -218,6 +243,62 @@ export async function getCragWithRoutes(
       name: sector.name,
       routes: sector.routes,
     })),
+  };
+}
+
+/**
+ * Get a crag's sectors and routes (with pitch IDs) for the batch report flow.
+ * Returns only what the route picker needs, plus the pitch IDs each report
+ * will be filed against. Sectors with no routes are omitted.
+ */
+export async function getCragForBatchReport(
+  cragId: string,
+): Promise<CragForBatchReport | null> {
+  const crag = await prisma.crag.findUnique({
+    where: { id: cragId },
+    select: {
+      id: true,
+      name: true,
+      sectors: {
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          routes: {
+            orderBy: { number: 'asc' },
+            select: {
+              id: true,
+              number: true,
+              name: true,
+              pitches: { select: { id: true, cotation: true, length: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!crag) return null;
+
+  return {
+    id: crag.id,
+    name: crag.name,
+    sectors: crag.sectors
+      .filter((sector) => sector.routes.length > 0)
+      .map((sector) => ({
+        id: sector.id,
+        name: sector.name,
+        routes: sector.routes.map((route) => ({
+          id: route.id,
+          number: route.number,
+          name: route.name,
+          pitches: route.pitches.map((pitch) => ({
+            id: pitch.id,
+            cotation: pitch.cotation,
+            length: pitch.length,
+          })),
+        })),
+      })),
   };
 }
 
