@@ -48,6 +48,11 @@ export interface PitchWithReports {
     id: string;
     createdAt: Date;
     comment: string | null;
+    problemDetected: boolean | null;
+    faultyBolt: boolean | null;
+    faultyAnchor: boolean | null;
+    dangerousClipping: boolean | null;
+    looseRock: boolean | null;
     visualCheck: boolean | null;
     anchorCheck: boolean | null;
     cleaningDone: boolean | null;
@@ -92,6 +97,11 @@ export interface CreateReportInput {
   firstname: string;
   lastname: string;
   email: string;
+  problemDetected?: boolean;
+  faultyBolt?: boolean;
+  faultyAnchor?: boolean;
+  dangerousClipping?: boolean;
+  looseRock?: boolean;
   visualCheck?: boolean;
   anchorCheck?: boolean;
   cleaningDone?: boolean;
@@ -104,6 +114,11 @@ export interface CreateReportWithAuthInput {
   pitchId: string;
   userEmail: string;
   userName?: string;
+  problemDetected?: boolean;
+  faultyBolt?: boolean;
+  faultyAnchor?: boolean;
+  dangerousClipping?: boolean;
+  looseRock?: boolean;
   visualCheck?: boolean;
   anchorCheck?: boolean;
   cleaningDone?: boolean;
@@ -269,6 +284,11 @@ export async function getRouteWithReports(
         id: report.id,
         createdAt: report.createdAt,
         comment: report.comment,
+        problemDetected: report.problemDetected,
+        faultyBolt: report.faultyBolt,
+        faultyAnchor: report.faultyAnchor,
+        dangerousClipping: report.dangerousClipping,
+        looseRock: report.looseRock,
         visualCheck: report.visualCheck,
         anchorCheck: report.anchorCheck,
         cleaningDone: report.cleaningDone,
@@ -334,6 +354,11 @@ export async function createReport(input: CreateReportInput): Promise<string> {
     data: {
       reportedPitchId: input.pitchId,
       reporterId: user.id,
+      problemDetected: input.problemDetected ?? null,
+      faultyBolt: input.faultyBolt ?? null,
+      faultyAnchor: input.faultyAnchor ?? null,
+      dangerousClipping: input.dangerousClipping ?? null,
+      looseRock: input.looseRock ?? null,
       visualCheck: input.visualCheck ?? null,
       anchorCheck: input.anchorCheck ?? null,
       cleaningDone: input.cleaningDone ?? null,
@@ -366,6 +391,11 @@ export async function getReport(reportId: string) {
 export async function updateReport(
   reportId: string,
   data: {
+    problemDetected?: boolean;
+    faultyBolt?: boolean;
+    faultyAnchor?: boolean;
+    dangerousClipping?: boolean;
+    looseRock?: boolean;
     visualCheck?: boolean;
     anchorCheck?: boolean;
     cleaningDone?: boolean;
@@ -377,6 +407,11 @@ export async function updateReport(
   return prisma.report.update({
     where: { id: reportId },
     data: {
+      problemDetected: data.problemDetected ?? null,
+      faultyBolt: data.faultyBolt ?? null,
+      faultyAnchor: data.faultyAnchor ?? null,
+      dangerousClipping: data.dangerousClipping ?? null,
+      looseRock: data.looseRock ?? null,
       visualCheck: data.visualCheck ?? null,
       anchorCheck: data.anchorCheck ?? null,
       cleaningDone: data.cleaningDone ?? null,
@@ -522,6 +557,11 @@ export async function createReportWithAuth(
     data: {
       reportedPitchId: input.pitchId,
       reporterId: user.id,
+      problemDetected: input.problemDetected ?? null,
+      faultyBolt: input.faultyBolt ?? null,
+      faultyAnchor: input.faultyAnchor ?? null,
+      dangerousClipping: input.dangerousClipping ?? null,
+      looseRock: input.looseRock ?? null,
       visualCheck: input.visualCheck ?? null,
       anchorCheck: input.anchorCheck ?? null,
       cleaningDone: input.cleaningDone ?? null,

@@ -21,6 +21,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
 
@@ -36,6 +37,13 @@ interface ReportFormProps {
   pitches: Pitch[];
 }
 
+const PROBLEM_DETAILS = [
+  { name: 'faultyBolt', label: 'Point défectueux' },
+  { name: 'faultyAnchor', label: 'Relais défectueux' },
+  { name: 'dangerousClipping', label: 'Clippage dangereux' },
+  { name: 'looseRock', label: 'Rocher instable' },
+] as const;
+
 export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
@@ -45,6 +53,11 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const [selectedPitchIds, setSelectedPitchIds] = useState<string[]>([pitchId]);
 
   const [formData, setFormData] = useState({
+    problemDetected: false,
+    faultyBolt: false,
+    faultyAnchor: false,
+    dangerousClipping: false,
+    looseRock: false,
     visualCheck: false,
     anchorCheck: false,
     cleaningDone: false,
@@ -61,6 +74,10 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
+      // Clear problem details when the problem flag is turned off
+      ...(name === 'problemDetected' && !checked
+        ? { faultyBolt: false, faultyAnchor: false, dangerousClipping: false, looseRock: false }
+        : {}),
     }));
   };
 
@@ -201,6 +218,52 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
               </ToggleButtonGroup>
             </>
           )}
+
+          <Box
+            sx={{
+              mb: 4,
+              p: 2,
+              bgcolor: 'warning.50',
+              borderRadius: 1,
+              border: 2,
+              borderColor: 'warning.main',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="problemDetected"
+                  checked={formData.problemDetected}
+                  onChange={handleChange}
+                  color="warning"
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <WarningAmberIcon color="warning" />
+                  <Typography fontWeight={600}>Problème détecté</Typography>
+                </Box>
+              }
+            />
+            {formData.problemDetected && (
+              <FormGroup sx={{ pl: 4, mt: 1 }}>
+                {PROBLEM_DETAILS.map(({ name, label }) => (
+                  <FormControlLabel
+                    key={name}
+                    control={
+                      <Checkbox
+                        name={name}
+                        checked={formData[name]}
+                        onChange={handleChange}
+                        color="warning"
+                      />
+                    }
+                    label={label}
+                  />
+                ))}
+              </FormGroup>
+            )}
+          </Box>
 
           <Typography variant="h6" gutterBottom>
             Actions réalisées

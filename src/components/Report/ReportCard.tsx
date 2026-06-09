@@ -26,6 +26,7 @@ import AnchorIcon from '@mui/icons-material/Anchor';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import BuildIcon from '@mui/icons-material/Build';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { USER_ROLE_LABELS, type UserRole } from '~/lib/roles';
@@ -38,6 +39,13 @@ interface ReportCardProps {
   pitchNumber?: number;
   currentUserEmail?: string;
 }
+
+const PROBLEM_DETAILS = [
+  { name: 'faultyBolt', label: 'Point défectueux' },
+  { name: 'faultyAnchor', label: 'Relais défectueux' },
+  { name: 'dangerousClipping', label: 'Clippage dangereux' },
+  { name: 'looseRock', label: 'Rocher instable' },
+] as const;
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('fr-FR', {
@@ -65,6 +73,11 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    problemDetected: report.problemDetected ?? false,
+    faultyBolt: report.faultyBolt ?? false,
+    faultyAnchor: report.faultyAnchor ?? false,
+    dangerousClipping: report.dangerousClipping ?? false,
+    looseRock: report.looseRock ?? false,
     visualCheck: report.visualCheck ?? false,
     anchorCheck: report.anchorCheck ?? false,
     cleaningDone: report.cleaningDone ?? false,
@@ -95,6 +108,10 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
+      // Clear problem details when the problem flag is turned off
+      ...(name === 'problemDetected' && !checked
+        ? { faultyBolt: false, faultyAnchor: false, dangerousClipping: false, looseRock: false }
+        : {}),
     }));
   };
 
@@ -185,6 +202,27 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
             </Box>
           </Box>
 
+          {report.problemDetected && (
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+              <Chip
+                icon={<WarningAmberIcon />}
+                label="Problème détecté"
+                size="small"
+                color="warning"
+                sx={{ fontWeight: 600 }}
+              />
+              {PROBLEM_DETAILS.filter(({ name }) => report[name]).map(({ name, label }) => (
+                <Chip
+                  key={name}
+                  label={label}
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                />
+              ))}
+            </Stack>
+          )}
+
           {completedChecks.length > 0 && (
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
               {completedChecks.map((check) => (
@@ -212,6 +250,52 @@ export function ReportCard({ report, pitchNumber, currentUserEmail }: ReportCard
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Modifier le rapport</DialogTitle>
         <DialogContent>
+          <Box
+            sx={{
+              mt: 1,
+              mb: 1,
+              p: 1.5,
+              bgcolor: 'warning.50',
+              borderRadius: 1,
+              border: 2,
+              borderColor: 'warning.main',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="problemDetected"
+                  checked={formData.problemDetected}
+                  onChange={handleChange}
+                  color="warning"
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <WarningAmberIcon color="warning" />
+                  <Typography fontWeight={600}>Problème détecté</Typography>
+                </Box>
+              }
+            />
+            {formData.problemDetected && (
+              <FormGroup sx={{ pl: 4 }}>
+                {PROBLEM_DETAILS.map(({ name, label }) => (
+                  <FormControlLabel
+                    key={name}
+                    control={
+                      <Checkbox
+                        name={name}
+                        checked={formData[name]}
+                        onChange={handleChange}
+                        color="warning"
+                      />
+                    }
+                    label={label}
+                  />
+                ))}
+              </FormGroup>
+            )}
+          </Box>
           <FormGroup sx={{ mt: 1 }}>
             <FormControlLabel
               control={

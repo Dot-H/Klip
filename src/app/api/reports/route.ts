@@ -7,6 +7,11 @@ export const dynamic = 'force-dynamic';
 
 const reportSchema = z.object({
   pitchIds: z.array(z.string().min(1, 'ID de longueur invalide')).min(1, 'Sélectionnez au moins une longueur'),
+  problemDetected: z.boolean().optional(),
+  faultyBolt: z.boolean().optional(),
+  faultyAnchor: z.boolean().optional(),
+  dangerousClipping: z.boolean().optional(),
+  looseRock: z.boolean().optional(),
   visualCheck: z.boolean().optional(),
   anchorCheck: z.boolean().optional(),
   cleaningDone: z.boolean().optional(),
