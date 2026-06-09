@@ -27,50 +27,60 @@ export default async function CragPage({ params }: CragPageProps) {
 
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        spacing={{ xs: 1, sm: 2 }}
-        sx={{ mb: 3 }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
-        >
-          {crag.name}
-        </Typography>
-        {crag.convention !== null && (
-          <Chip
-            label={crag.convention ? 'Conventionné' : 'Sans convention'}
-            size="small"
-            color={crag.convention ? 'success' : 'default'}
-          />
-        )}
-      </Stack>
-
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
         alignItems={{ xs: 'flex-start', sm: 'center' }}
         spacing={2}
-        sx={{ mb: { xs: 2, sm: 4 } }}
+        sx={{ mb: 3 }}
       >
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="body1" color="text.secondary">
-            {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
-            {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={{ xs: 1, sm: 2 }}
+          flexWrap="wrap"
+          useFlexGap
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+          >
+            {crag.name}
           </Typography>
-          <SectorAddButton cragId={cragId} cragName={crag.name} />
+          {crag.convention !== null && (
+            <Chip
+              label={crag.convention ? 'Conventionné' : 'Sans convention'}
+              size="small"
+              color={crag.convention ? 'success' : 'default'}
+            />
+          )}
         </Stack>
         {totalRoutes > 0 && (
           <LinkButton
             href={`/crag/${cragId}/report`}
-            variant="outlined"
-            size="small"
+            variant="contained"
             startIcon={<PlaylistAddCheckIcon />}
-            sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+            sx={{
+              alignSelf: { xs: 'stretch', sm: 'auto' },
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
           >
             Rapport groupé
           </LinkButton>
         )}
+      </Stack>
+
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={2}
+        sx={{ mb: { xs: 2, sm: 4 } }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          {crag.sectors.length} secteur{crag.sectors.length > 1 ? 's' : ''} •{' '}
+          {totalRoutes} voie{totalRoutes > 1 ? 's' : ''}
+        </Typography>
+        <SectorAddButton cragId={cragId} cragName={crag.name} />
       </Stack>
 
       {crag.sectors.length === 0 ? (
