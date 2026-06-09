@@ -346,7 +346,10 @@ export function ReportForm({
                 Aucun résultat pour « {query} ».
               </Typography>
             ) : (
-              <Paper variant="outlined">
+              <Paper
+                variant="outlined"
+                sx={{ maxHeight: 320, overflowY: 'auto' }}
+              >
                 {filteredSectors.map((sector, sectorIndex) => {
                   const sectorPitchIds = pitchIdsOf(sector.routes);
                   const sectorState = groupSelection(
