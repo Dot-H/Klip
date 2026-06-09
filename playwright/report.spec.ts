@@ -78,6 +78,44 @@ test.describe('Page de création de rapport', () => {
   });
 });
 
+test.describe('Persistance du brouillon de rapport', () => {
+  test('le brouillon est conservé après un rechargement de page (ex: retour de connexion)', async ({
+    roseDesSablesReportPage: page,
+  }) => {
+    const visualCheck = page.getByRole('checkbox', { name: /Contrôle visuel/i });
+    const commentField = page.getByLabel(/Commentaire/i);
+
+    await visualCheck.check();
+    await commentField.fill('Brouillon à conserver après connexion');
+
+    // A full reload mimics returning to the form after the sign-in redirect.
+    await page.reload({ waitUntil: 'networkidle' });
+
+    await expect(
+      page.getByRole('checkbox', { name: /Contrôle visuel/i }),
+    ).toBeChecked();
+    await expect(page.getByLabel(/Commentaire/i)).toHaveValue(
+      'Brouillon à conserver après connexion',
+    );
+  });
+
+  test('les détails de problème sont conservés après un rechargement', async ({
+    roseDesSablesReportPage: page,
+  }) => {
+    await page.getByRole('checkbox', { name: /Problème détecté/i }).check();
+    await page.getByRole('checkbox', { name: /Point défectueux/i }).check();
+
+    await page.reload({ waitUntil: 'networkidle' });
+
+    await expect(
+      page.getByRole('checkbox', { name: /Problème détecté/i }),
+    ).toBeChecked();
+    await expect(
+      page.getByRole('checkbox', { name: /Point défectueux/i }),
+    ).toBeChecked();
+  });
+});
+
 test.describe('Rapport multi-longueurs', () => {
   test('affiche la section "Longueurs concernées"', async ({ pichenibuleReportPage }) => {
     await expect(pichenibuleReportPage.getByText(/Longueurs concernées/i)).toBeVisible();

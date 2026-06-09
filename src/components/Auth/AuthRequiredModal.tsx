@@ -7,9 +7,19 @@ import { AuthView } from '@neondatabase/neon-js/auth/react/ui';
 interface AuthRequiredModalProps {
   open: boolean;
   onClose: () => void;
+  /**
+   * Where to send the user once authenticated. Forwarded to the auth view as
+   * both `redirectTo` (email OTP / same-page flows) and `callbackURL` (OAuth /
+   * magic-link flows that navigate away from the app and back).
+   */
+  redirectTo?: string;
 }
 
-export function AuthRequiredModal({ open, onClose }: AuthRequiredModalProps) {
+export function AuthRequiredModal({
+  open,
+  onClose,
+  redirectTo,
+}: AuthRequiredModalProps) {
   return (
     <Dialog
       open={open}
@@ -32,7 +42,7 @@ export function AuthRequiredModal({ open, onClose }: AuthRequiredModalProps) {
       </DialogTitle>
       <DialogContent dividers>
         <Box sx={{ py: 2 }}>
-          <AuthView />
+          <AuthView redirectTo={redirectTo} callbackURL={redirectTo} />
         </Box>
       </DialogContent>
     </Dialog>

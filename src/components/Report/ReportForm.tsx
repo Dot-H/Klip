@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -24,6 +24,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
+import {
+  loadReportDraft,
+  saveReportDraft,
+  clearReportDraft,
+} from '~/lib/reportDraft';
 
 interface Pitch {
   id: string;
@@ -44,27 +49,73 @@ const PROBLEM_DETAILS = [
   { name: 'looseRock', label: 'Rocher instable' },
 ] as const;
 
+const DEFAULT_FORM_DATA = {
+  problemDetected: false,
+  faultyBolt: false,
+  faultyAnchor: false,
+  dangerousClipping: false,
+  looseRock: false,
+  visualCheck: false,
+  anchorCheck: false,
+  cleaningDone: false,
+  trundleDone: false,
+  totalReboltingDone: false,
+  comment: '',
+};
+
+type FormData = typeof DEFAULT_FORM_DATA;
+
 export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
   const [selectedPitchIds, setSelectedPitchIds] = useState<string[]>([pitchId]);
+  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
+  // Becomes true once we've attempted to restore a saved draft. We must not
+  // persist before this, otherwise the initial empty state would overwrite a
+  // draft saved before the user left to sign in.
+  const [hydrated, setHydrated] = useState(false);
 
-  const [formData, setFormData] = useState({
-    problemDetected: false,
-    faultyBolt: false,
-    faultyAnchor: false,
-    dangerousClipping: false,
-    looseRock: false,
-    visualCheck: false,
-    anchorCheck: false,
-    cleaningDone: false,
-    trundleDone: false,
-    totalReboltingDone: false,
-    comment: '',
-  });
+  // Restore a previously saved draft (e.g. after returning from sign-in). Runs
+  // once: the `hydrated` guard short-circuits any re-run from changing deps.
+  useEffect(() => {
+    if (hydrated) {
+      return;
+    }
+    const draft = loadReportDraft();
+    if (draft && draft.routeId === routeId) {
+      // Only keep pitches that still belong to this route.
+      const validPitchIds = draft.selectedPitchIds.filter((id) =>
+        pitches.some((pitch) => pitch.id === id),
+      );
+      if (validPitchIds.length > 0) {
+        setSelectedPitchIds(validPitchIds);
+      }
+      const { routeId: _routeId, selectedPitchIds: _pitchIds, ...rest } = draft;
+      setFormData({ ...DEFAULT_FORM_DATA, ...rest });
+    }
+    setHydrated(true);
+  }, [hydrated, routeId, pitches]);
+
+  // Persist the draft on every change so it survives a full page navigation.
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    saveReportDraft({ routeId, selectedPitchIds, ...formData });
+  }, [hydrated, routeId, selectedPitchIds, formData]);
+
+  const openAuthModal = () => {
+    // Send the user back to this exact report form once authenticated, so the
+    // restored draft is shown again instead of a blank page.
+    if (typeof window !== 'undefined') {
+      setRedirectTo(window.location.pathname + window.location.search);
+    }
+    setAuthModalOpen(true);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -103,6 +154,8 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
         throw new Error(data.error || 'Une erreur est survenue');
       }
 
+      // The report was saved server-side; drop the local draft.
+      clearReportDraft();
       router.push(`/route/${routeId}`);
       router.refresh();
     } catch (err) {
@@ -170,7 +223,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
                 variant="contained"
                 size="small"
                 startIcon={<LoginIcon />}
-                onClick={() => setAuthModalOpen(true)}
+                onClick={openAuthModal}
                 sx={{
                   flexShrink: 0,
                   alignSelf: { xs: 'flex-start', sm: 'auto' },
@@ -362,6 +415,7 @@ export function ReportForm({ pitchId, routeId, pitches }: ReportFormProps) {
       <AuthRequiredModal
         open={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
+        redirectTo={redirectTo}
       />
     </>
   );
