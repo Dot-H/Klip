@@ -82,7 +82,7 @@ test.describe('Page de détail d\'une route multi-longueurs', () => {
 
   test('clic sur une longueur navigue vers le formulaire de rapport', async ({ pichenibulePage }) => {
     await pichenibulePage.getByRole('link', { name: /L2.*6c/i }).click();
-    await expect(pichenibulePage).toHaveURL(/\/report\?pitchId=/);
+    await expect(pichenibulePage).toHaveURL(/\/crag\/[^/]+\/report\?pitchId=/);
   });
 });
 
