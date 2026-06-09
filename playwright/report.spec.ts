@@ -187,10 +187,31 @@ test.describe('Rapport groupé (batch)', () => {
     ).toBeVisible();
   });
 
-  test('affiche les secteurs et longueurs du site', async ({ buouxBatchReportPage }) => {
+  test('ne liste aucune voie tant qu\'aucune recherche n\'est faite', async ({ buouxBatchReportPage }) => {
     await expect(buouxBatchReportPage.getByText(/Longueurs concernées/i)).toBeVisible();
-    await expect(buouxBatchReportPage.getByText('Styx')).toBeVisible();
-    await expect(buouxBatchReportPage.getByText('Bout du Monde')).toBeVisible();
+    await expect(
+      buouxBatchReportPage.getByPlaceholder(/Rechercher une voie ou un secteur/i),
+    ).toBeVisible();
+    await expect(
+      buouxBatchReportPage.getByText(/Recherchez une voie ou un secteur/i),
+    ).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('1. Rose des Sables')).toHaveCount(0);
+  });
+
+  test('rechercher une voie par nom affiche le résultat', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage
+      .getByPlaceholder(/Rechercher une voie ou un secteur/i)
+      .fill('Rose');
+
+    await expect(buouxBatchReportPage.getByText('1. Rose des Sables')).toBeVisible();
+    await expect(buouxBatchReportPage.getByText('2. Tabou au Nord')).toHaveCount(0);
+  });
+
+  test('rechercher un secteur liste toutes ses voies', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage
+      .getByPlaceholder(/Rechercher une voie ou un secteur/i)
+      .fill('Styx');
+
     await expect(buouxBatchReportPage.getByText('1. Rose des Sables')).toBeVisible();
     await expect(buouxBatchReportPage.getByText('2. Tabou au Nord')).toBeVisible();
   });
@@ -209,16 +230,48 @@ test.describe('Rapport groupé (batch)', () => {
     ).toBeDisabled();
   });
 
-  test('sélectionner une longueur met à jour le compteur', async ({ buouxBatchReportPage }) => {
-    await buouxBatchReportPage.getByText('1. Rose des Sables').click();
+  test('sélectionner une longueur met à jour le compteur sans effacer la recherche', async ({
+    buouxBatchReportPage,
+  }) => {
+    const search = buouxBatchReportPage.getByPlaceholder(/Rechercher une voie ou un secteur/i);
+    await search.fill('Rose');
+    await buouxBatchReportPage
+      .getByRole('button', { name: /1\. Rose des Sables/i })
+      .click();
 
     await expect(buouxBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
     await expect(
       buouxBatchReportPage.getByRole('button', { name: /Envoyer le rapport pour 1 longueur/i }),
     ).toBeVisible();
+    // The search must not be cleared by selecting, so the user can keep picking.
+    await expect(search).toHaveValue('Rose');
+    // The selection is shown as a removable chip.
+    await expect(
+      buouxBatchReportPage.locator('.MuiChip-root', { hasText: '1. Rose des Sables' }),
+    ).toBeVisible();
+  });
+
+  test('une longueur sélectionnée reste sélectionnée après une nouvelle recherche', async ({
+    buouxBatchReportPage,
+  }) => {
+    const search = buouxBatchReportPage.getByPlaceholder(/Rechercher une voie ou un secteur/i);
+    await search.fill('Rose');
+    await buouxBatchReportPage
+      .getByRole('button', { name: /1\. Rose des Sables/i })
+      .click();
+    await search.fill('Tabou');
+
+    // The chip persists even though the route is no longer in the results.
+    await expect(buouxBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
+    await expect(
+      buouxBatchReportPage.locator('.MuiChip-root', { hasText: '1. Rose des Sables' }),
+    ).toBeVisible();
   });
 
   test('sélectionner un secteur sélectionne toutes ses longueurs', async ({ buouxBatchReportPage }) => {
+    await buouxBatchReportPage
+      .getByPlaceholder(/Rechercher une voie ou un secteur/i)
+      .fill('Styx');
     await buouxBatchReportPage.getByText('Styx').click();
 
     await expect(buouxBatchReportPage.getByText(/2 longueurs sélectionnées/i)).toBeVisible();
@@ -226,6 +279,10 @@ test.describe('Rapport groupé (batch)', () => {
 
   test('une voie multi-longueurs affiche une ligne par longueur', async ({ verdonBatchReportPage }) => {
     // Pichenibule (Escalès) has 3 pitches and must expand into L1/L2/L3.
+    await verdonBatchReportPage
+      .getByPlaceholder(/Rechercher une voie ou un secteur/i)
+      .fill('Pichenibule');
+
     await expect(verdonBatchReportPage.getByText('1. Pichenibule')).toBeVisible();
     await expect(verdonBatchReportPage.getByText(/L1 \(6b, 35m\)/i)).toBeVisible();
     await expect(verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i)).toBeVisible();
@@ -235,6 +292,9 @@ test.describe('Rapport groupé (batch)', () => {
   test('une longueur d\'une voie multi-longueurs est sélectionnable individuellement', async ({
     verdonBatchReportPage,
   }) => {
+    await verdonBatchReportPage
+      .getByPlaceholder(/Rechercher une voie ou un secteur/i)
+      .fill('Pichenibule');
     await verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i).click();
 
     await expect(verdonBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();

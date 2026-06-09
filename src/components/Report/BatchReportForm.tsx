@@ -17,11 +17,18 @@ import {
   ListItemText,
   Checkbox,
   Divider,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Chip,
+  Stack,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import { authClient } from '~/lib/auth/client';
 import { AuthRequiredModal } from '~/components/Auth/AuthRequiredModal';
-import { pitchIdsOf, groupSelection } from '~/lib/batchReport';
+import { pitchIdsOf, groupSelection, filterSectors } from '~/lib/batchReport';
 import type { BatchReportSector, BatchReportPitch } from '~/lib/data';
 import { ReporterIdentity } from './ReporterIdentity';
 import { ReportFields } from './ReportFields';
@@ -50,6 +57,7 @@ export function BatchReportForm({ cragId, sectors }: BatchReportFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [selectedPitchIds, setSelectedPitchIds] = useState<Set<string>>(
     new Set(),
   );
@@ -57,9 +65,29 @@ export function BatchReportForm({ cragId, sectors }: BatchReportFormProps) {
     DEFAULT_REPORT_FORM_DATA,
   );
 
-  const allRoutes = useMemo(
-    () => sectors.flatMap((sector) => sector.routes),
-    [sectors],
+  // Flat, document-ordered metadata for every pitch — drives the selected
+  // chips and the order of the created reports.
+  const pitchInfos = useMemo(() => {
+    const infos: { id: string; label: string }[] = [];
+    for (const sector of sectors) {
+      for (const route of sector.routes) {
+        const multi = route.pitches.length > 1;
+        route.pitches.forEach((pitch, index) => {
+          infos.push({
+            id: pitch.id,
+            label: multi
+              ? `${routeLabel(route)} · L${index + 1}`
+              : routeLabel(route),
+          });
+        });
+      }
+    }
+    return infos;
+  }, [sectors]);
+
+  const filteredSectors = useMemo(
+    () => filterSectors(sectors, query),
+    [sectors, query],
   );
 
   const handleChange = (
@@ -94,12 +122,11 @@ export function BatchReportForm({ cragId, sectors }: BatchReportFormProps) {
     });
   };
 
-  // Selected pitch IDs in display order, so the created reports follow the
-  // same ordering the user saw.
-  const pitchIds = useMemo(
-    () => pitchIdsOf(allRoutes).filter((id) => selectedPitchIds.has(id)),
-    [allRoutes, selectedPitchIds],
+  const selectedInfos = useMemo(
+    () => pitchInfos.filter((info) => selectedPitchIds.has(info.id)),
+    [pitchInfos, selectedPitchIds],
   );
+  const pitchIds = selectedInfos.map((info) => info.id);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +170,26 @@ export function BatchReportForm({ cragId, sectors }: BatchReportFormProps) {
       ? 'Sélectionnez au moins une longueur'
       : '';
 
+  const renderPitchRow = (
+    pitch: BatchReportPitch,
+    label: string,
+    indent: number,
+  ) => (
+    <ListItem key={pitch.id} disablePadding>
+      <ListItemButton onClick={() => togglePitch(pitch.id)} sx={{ pl: indent }}>
+        <ListItemIcon sx={{ minWidth: 40 }}>
+          <Checkbox
+            edge="start"
+            checked={selectedPitchIds.has(pitch.id)}
+            tabIndex={-1}
+            disableRipple
+          />
+        </ListItemIcon>
+        <ListItemText primary={label} />
+      </ListItemButton>
+    </ListItem>
+  );
+
   return (
     <>
       <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
@@ -162,112 +209,144 @@ export function BatchReportForm({ cragId, sectors }: BatchReportFormProps) {
           <Typography variant="h6" gutterBottom>
             Longueurs concernées
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {selectedCount > 0
-              ? `${selectedCount} longueur${plural} sélectionnée${plural}`
-              : 'Sélectionnez les longueurs sur lesquelles vous êtes intervenu.'}
-          </Typography>
 
-          <Paper variant="outlined" sx={{ mb: 4 }}>
-            {sectors.map((sector, sectorIndex) => {
-              const sectorPitchIds = pitchIdsOf(sector.routes);
-              const sectorState = groupSelection(
-                sectorPitchIds,
-                selectedPitchIds,
-              );
-              return (
-                <Box key={sector.id}>
-                  {sectorIndex > 0 && <Divider />}
-                  <ListItemButton
-                    onClick={() =>
-                      toggleMany(sectorPitchIds, sectorState !== 'all')
-                    }
-                    sx={{ bgcolor: 'grey.50' }}
+          {selectedCount > 0 && (
+            <>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1 }}
+              >
+                {selectedCount} longueur{plural} sélectionnée{plural}
+              </Typography>
+              <Stack
+                direction="row"
+                flexWrap="wrap"
+                useFlexGap
+                spacing={1}
+                sx={{ mb: 2 }}
+              >
+                {selectedInfos.map((info) => (
+                  <Chip
+                    key={info.id}
+                    label={info.label}
+                    onDelete={() => togglePitch(info.id)}
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                  />
+                ))}
+              </Stack>
+            </>
+          )}
+
+          <TextField
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher une voie ou un secteur"
+            fullWidth
+            size="small"
+            sx={{ mb: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: query ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="effacer la recherche"
+                    size="small"
+                    onClick={() => setQuery('')}
+                    edge="end"
                   >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                      <Checkbox
-                        edge="start"
-                        checked={sectorState === 'all'}
-                        indeterminate={sectorState === 'some'}
-                        tabIndex={-1}
-                        disableRipple
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={sector.name}
-                      primaryTypographyProps={{ fontWeight: 600 }}
-                    />
-                  </ListItemButton>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            }}
+          />
 
-                  <List disablePadding>
-                    {sector.routes.map((route) => {
-                      // Single-pitch routes are a single selectable line
-                      // labelled with the route; multi-pitch routes expand
-                      // into one line per pitch.
-                      if (route.pitches.length === 1) {
-                        const pitch = route.pitches[0];
-                        return (
-                          <ListItem key={route.id} disablePadding>
-                            <ListItemButton
-                              onClick={() => togglePitch(pitch.id)}
-                              sx={{ pl: 4 }}
-                            >
-                              <ListItemIcon sx={{ minWidth: 40 }}>
-                                <Checkbox
-                                  edge="start"
-                                  checked={selectedPitchIds.has(pitch.id)}
-                                  tabIndex={-1}
-                                  disableRipple
-                                />
-                              </ListItemIcon>
-                              <ListItemText primary={routeLabel(route)} />
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      }
+          <Box sx={{ mb: 4 }}>
+            {!query ? (
+              <Typography variant="body2" color="text.secondary">
+                Recherchez une voie ou un secteur pour l’ajouter au rapport.
+              </Typography>
+            ) : filteredSectors.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                Aucun résultat pour « {query} ».
+              </Typography>
+            ) : (
+              <Paper variant="outlined">
+                {filteredSectors.map((sector, sectorIndex) => {
+                  const sectorPitchIds = pitchIdsOf(sector.routes);
+                  const sectorState = groupSelection(
+                    sectorPitchIds,
+                    selectedPitchIds,
+                  );
+                  return (
+                    <Box key={sector.id}>
+                      {sectorIndex > 0 && <Divider />}
+                      <ListItemButton
+                        onClick={() =>
+                          toggleMany(sectorPitchIds, sectorState !== 'all')
+                        }
+                        sx={{ bgcolor: 'grey.50' }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Checkbox
+                            edge="start"
+                            checked={sectorState === 'all'}
+                            indeterminate={sectorState === 'some'}
+                            tabIndex={-1}
+                            disableRipple
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={sector.name}
+                          primaryTypographyProps={{ fontWeight: 600 }}
+                        />
+                      </ListItemButton>
 
-                      return (
-                        <Box key={route.id}>
-                          <ListItem sx={{ pl: 4, py: 0.5 }}>
-                            <ListItemText
-                              primary={routeLabel(route)}
-                              primaryTypographyProps={{
-                                variant: 'body2',
-                                color: 'text.secondary',
-                              }}
-                            />
-                          </ListItem>
-                          {route.pitches.map((pitch, pitchIndex) => {
-                            const details = pitchDetails(pitch);
-                            return (
-                              <ListItem key={pitch.id} disablePadding>
-                                <ListItemButton
-                                  onClick={() => togglePitch(pitch.id)}
-                                  sx={{ pl: 7 }}
-                                >
-                                  <ListItemIcon sx={{ minWidth: 40 }}>
-                                    <Checkbox
-                                      edge="start"
-                                      checked={selectedPitchIds.has(pitch.id)}
-                                      tabIndex={-1}
-                                      disableRipple
-                                    />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary={`L${pitchIndex + 1}${details ? ` (${details})` : ''}`}
-                                  />
-                                </ListItemButton>
-                              </ListItem>
+                      <List disablePadding>
+                        {sector.routes.map((route) => {
+                          if (route.pitches.length === 1) {
+                            return renderPitchRow(
+                              route.pitches[0],
+                              routeLabel(route),
+                              4,
                             );
-                          })}
-                        </Box>
-                      );
-                    })}
-                  </List>
-                </Box>
-              );
-            })}
-          </Paper>
+                          }
+                          return (
+                            <Box key={route.id}>
+                              <ListItem sx={{ pl: 4, py: 0.5 }}>
+                                <ListItemText
+                                  primary={routeLabel(route)}
+                                  primaryTypographyProps={{
+                                    variant: 'body2',
+                                    color: 'text.secondary',
+                                  }}
+                                />
+                              </ListItem>
+                              {route.pitches.map((pitch, pitchIndex) => {
+                                const details = pitchDetails(pitch);
+                                return renderPitchRow(
+                                  pitch,
+                                  `L${pitchIndex + 1}${details ? ` (${details})` : ''}`,
+                                  7,
+                                );
+                              })}
+                            </Box>
+                          );
+                        })}
+                      </List>
+                    </Box>
+                  );
+                })}
+              </Paper>
+            )}
+          </Box>
 
           <ReportFields formData={formData} onChange={handleChange} />
 

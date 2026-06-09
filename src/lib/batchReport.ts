@@ -21,6 +21,43 @@ export function pitchIdsOf(routes: RouteRef[]): string[] {
   return routes.flatMap((route) => route.pitches.map((pitch) => pitch.id));
 }
 
+// Combining diacritical marks (U+0300–U+036F), left after NFD decomposition.
+const DIACRITICS = /[̀-ͯ]/g;
+
+/** Lowercase and strip accents so searches are diacritic-insensitive. */
+export function normalizeText(value: string): string {
+  return value.normalize('NFD').replace(DIACRITICS, '').toLowerCase().trim();
+}
+
+function routeLabelOf(route: { number: number; name: string | null }): string {
+  return route.name ? `${route.number}. ${route.name}` : `Voie ${route.number}`;
+}
+
+/**
+ * Filter sectors for the batch picker's search box. An empty query matches
+ * nothing (the picker shows a hint instead of the whole crag). When the query
+ * matches a sector name, every route of that sector is returned; otherwise only
+ * the routes whose label matches are kept. Matching is accent-insensitive.
+ */
+export function filterSectors<
+  R extends { number: number; name: string | null },
+  S extends { name: string; routes: R[] },
+>(sectors: S[], query: string): S[] {
+  const q = normalizeText(query);
+  if (!q) {
+    return [];
+  }
+  return sectors.flatMap((sector) => {
+    if (normalizeText(sector.name).includes(q)) {
+      return [sector];
+    }
+    const routes = sector.routes.filter((route) =>
+      normalizeText(routeLabelOf(route)).includes(q),
+    );
+    return routes.length > 0 ? [{ ...sector, routes }] : [];
+  });
+}
+
 export type GroupSelection = 'none' | 'some' | 'all';
 
 /**
