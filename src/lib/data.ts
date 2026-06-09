@@ -38,11 +38,17 @@ export interface CragDetail {
   sectors: SectorWithRoutes[];
 }
 
+export interface BatchReportPitch {
+  id: string;
+  cotation: string | null;
+  length: number | null;
+}
+
 export interface BatchReportRoute {
   id: string;
   number: number;
   name: string | null;
-  pitchIds: string[];
+  pitches: BatchReportPitch[];
 }
 
 export interface BatchReportSector {
@@ -264,7 +270,7 @@ export async function getCragForBatchReport(
               id: true,
               number: true,
               name: true,
-              pitches: { select: { id: true } },
+              pitches: { select: { id: true, cotation: true, length: true } },
             },
           },
         },
@@ -286,7 +292,11 @@ export async function getCragForBatchReport(
           id: route.id,
           number: route.number,
           name: route.name,
-          pitchIds: route.pitches.map((pitch) => pitch.id),
+          pitches: route.pitches.map((pitch) => ({
+            id: pitch.id,
+            cotation: pitch.cotation,
+            length: pitch.length,
+          })),
         })),
       })),
   };

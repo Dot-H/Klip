@@ -1,30 +1,38 @@
-import { collectPitchIds, type BatchRoute } from '../batchReport';
+import { pitchIdsOf, groupSelection, type RouteRef } from '../batchReport';
 
-const routes: BatchRoute[] = [
-  { id: 'r1', pitchIds: ['p1'] },
-  { id: 'r2', pitchIds: ['p2a', 'p2b'] },
-  { id: 'r3', pitchIds: ['p3'] },
-  { id: 'r4', pitchIds: [] },
+const routes: RouteRef[] = [
+  { pitches: [{ id: 'p1' }] },
+  { pitches: [{ id: 'p2a' }, { id: 'p2b' }, { id: 'p2c' }] },
+  { pitches: [] },
 ];
 
-describe('collectPitchIds', () => {
-  it('returns no pitches when nothing is selected', () => {
-    expect(collectPitchIds(routes, new Set())).toEqual([]);
+describe('pitchIdsOf', () => {
+  it('flattens every pitch of the routes, in order', () => {
+    expect(pitchIdsOf(routes)).toEqual(['p1', 'p2a', 'p2b', 'p2c']);
   });
 
-  it('flattens every pitch of the selected routes, in route order', () => {
-    expect(collectPitchIds(routes, new Set(['r2', 'r1']))).toEqual([
-      'p1',
-      'p2a',
-      'p2b',
-    ]);
+  it('returns an empty array when there are no pitches', () => {
+    expect(pitchIdsOf([{ pitches: [] }])).toEqual([]);
+  });
+});
+
+describe('groupSelection', () => {
+  it('is "none" when nothing in the group is selected', () => {
+    expect(groupSelection(['a', 'b'], new Set())).toBe('none');
+    expect(groupSelection(['a', 'b'], new Set(['x']))).toBe('none');
   });
 
-  it('ignores selected routes that have no pitches', () => {
-    expect(collectPitchIds(routes, new Set(['r4', 'r3']))).toEqual(['p3']);
+  it('is "some" when only part of the group is selected', () => {
+    expect(groupSelection(['a', 'b', 'c'], new Set(['b']))).toBe('some');
   });
 
-  it('ignores selected ids that match no route', () => {
-    expect(collectPitchIds(routes, new Set(['does-not-exist']))).toEqual([]);
+  it('is "all" when every member is selected', () => {
+    expect(groupSelection(['a', 'b'], new Set(['a', 'b', 'extra']))).toBe(
+      'all',
+    );
+  });
+
+  it('treats an empty group as "none"', () => {
+    expect(groupSelection([], new Set(['a']))).toBe('none');
   });
 });

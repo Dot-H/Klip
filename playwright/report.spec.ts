@@ -187,8 +187,8 @@ test.describe('Rapport groupé (batch)', () => {
     ).toBeVisible();
   });
 
-  test('affiche les secteurs et voies du site', async ({ buouxBatchReportPage }) => {
-    await expect(buouxBatchReportPage.getByText(/Voies concernées/i)).toBeVisible();
+  test('affiche les secteurs et longueurs du site', async ({ buouxBatchReportPage }) => {
+    await expect(buouxBatchReportPage.getByText(/Longueurs concernées/i)).toBeVisible();
     await expect(buouxBatchReportPage.getByText('Styx')).toBeVisible();
     await expect(buouxBatchReportPage.getByText('Bout du Monde')).toBeVisible();
     await expect(buouxBatchReportPage.getByText('1. Rose des Sables')).toBeVisible();
@@ -209,19 +209,35 @@ test.describe('Rapport groupé (batch)', () => {
     ).toBeDisabled();
   });
 
-  test('sélectionner une voie met à jour le compteur', async ({ buouxBatchReportPage }) => {
+  test('sélectionner une longueur met à jour le compteur', async ({ buouxBatchReportPage }) => {
     await buouxBatchReportPage.getByText('1. Rose des Sables').click();
 
-    await expect(buouxBatchReportPage.getByText(/1 voie sélectionnée/i)).toBeVisible();
+    await expect(buouxBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
     await expect(
-      buouxBatchReportPage.getByRole('button', { name: /Envoyer le rapport pour 1 voie/i }),
+      buouxBatchReportPage.getByRole('button', { name: /Envoyer le rapport pour 1 longueur/i }),
     ).toBeVisible();
   });
 
-  test('sélectionner un secteur sélectionne toutes ses voies', async ({ buouxBatchReportPage }) => {
+  test('sélectionner un secteur sélectionne toutes ses longueurs', async ({ buouxBatchReportPage }) => {
     await buouxBatchReportPage.getByText('Styx').click();
 
-    await expect(buouxBatchReportPage.getByText(/2 voies sélectionnées/i)).toBeVisible();
+    await expect(buouxBatchReportPage.getByText(/2 longueurs sélectionnées/i)).toBeVisible();
+  });
+
+  test('une voie multi-longueurs affiche une ligne par longueur', async ({ verdonBatchReportPage }) => {
+    // Pichenibule (Escalès) has 3 pitches and must expand into L1/L2/L3.
+    await expect(verdonBatchReportPage.getByText('1. Pichenibule')).toBeVisible();
+    await expect(verdonBatchReportPage.getByText(/L1 \(6b, 35m\)/i)).toBeVisible();
+    await expect(verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i)).toBeVisible();
+    await expect(verdonBatchReportPage.getByText(/L3 \(6a\+, 30m\)/i)).toBeVisible();
+  });
+
+  test('une longueur d\'une voie multi-longueurs est sélectionnable individuellement', async ({
+    verdonBatchReportPage,
+  }) => {
+    await verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i).click();
+
+    await expect(verdonBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
   });
 
   test('clic sur "Se connecter" ouvre la modal d\'authentification', async ({ buouxBatchReportPage }) => {
