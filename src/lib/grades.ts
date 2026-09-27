@@ -53,3 +53,11 @@ export function getMaxCotation(pitches: { cotation: string | null }[]): string |
   if (cotations.length === 0) return null;
   return cotations.reduce((max, c) => (compareGrades(c, max) > 0 ? c : max));
 }
+
+/**
+ * Format the cotations of every pitch of a route, in pitch order, e.g. "5c,4b"
+ */
+export function formatCotations(pitches: { cotation: string | null }[]): string | null {
+  if (pitches.length === 0) return null;
+  return pitches.map((p) => p.cotation ?? '?').join(',');
+}
