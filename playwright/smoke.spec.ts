@@ -41,11 +41,11 @@ test.describe('Critical User Journeys', () => {
   });
 
   test('multi-pitch route displays pitches and reports', async ({ pichenibulePage }) => {
-    // Should show pitches section
+    // Should show pitches section (cotations hidden from a non-connected user)
     await expect(pichenibulePage.getByText(/Longueurs/i)).toBeVisible();
-    await expect(pichenibulePage.getByRole('link', { name: /L1.*6b/i })).toBeVisible();
-    await expect(pichenibulePage.getByRole('link', { name: /L2.*6c/i })).toBeVisible();
-    await expect(pichenibulePage.getByRole('link', { name: /L3.*6a\+/i })).toBeVisible();
+    await expect(pichenibulePage.getByRole('link', { name: /^L1 \(35m\)$/i })).toBeVisible();
+    await expect(pichenibulePage.getByRole('link', { name: /^L2 \(40m\)$/i })).toBeVisible();
+    await expect(pichenibulePage.getByRole('link', { name: /^L3 \(30m\)$/i })).toBeVisible();
 
     // Should show reports history
     await expect(pichenibulePage.getByRole('heading', { name: /Historique des rapports/i })).toBeVisible();
@@ -139,9 +139,9 @@ test.describe('Visual Elements', () => {
   });
 
   test('missing data shown with question marks', async ({ voieACompleterPage }) => {
-    // Should show "?" for missing cotation and length
+    // Cotation is hidden for a non-connected user; only the missing length shows as "?m"
     const header = voieACompleterPage.locator('h1');
-    await expect(header).toContainText('Cotation?');
+    await expect(header).not.toContainText('Cotation?');
     await expect(header).toContainText('?m');
   });
 });

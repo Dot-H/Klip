@@ -180,7 +180,7 @@ test.describe('Navigation depuis le bouton rapport', () => {
   });
 
   test('clic sur longueur spécifique pré-sélectionne cette longueur', async ({ pichenibulePage }) => {
-    await pichenibulePage.getByRole('link', { name: /L2.*6c/i }).click();
+    await pichenibulePage.getByRole('link', { name: /^L2 \(40m\)$/i }).click();
 
     await expect(pichenibulePage).toHaveURL(/\/crag\/[^/]+\/report\?pitchId=/);
     await expect(pichenibulePage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
@@ -297,9 +297,10 @@ test.describe('Rapport groupé (batch)', () => {
       .fill('Pichenibule');
 
     await expect(verdonBatchReportPage.getByText('1. Pichenibule')).toBeVisible();
-    await expect(verdonBatchReportPage.getByText(/L1 \(6b, 35m\)/i)).toBeVisible();
-    await expect(verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i)).toBeVisible();
-    await expect(verdonBatchReportPage.getByText(/L3 \(6a\+, 30m\)/i)).toBeVisible();
+    // Cotations are hidden from a non-connected user, only the length shows.
+    await expect(verdonBatchReportPage.getByText(/^L1 \(35m\)$/i)).toBeVisible();
+    await expect(verdonBatchReportPage.getByText(/^L2 \(40m\)$/i)).toBeVisible();
+    await expect(verdonBatchReportPage.getByText(/^L3 \(30m\)$/i)).toBeVisible();
   });
 
   test('une longueur d\'une voie multi-longueurs est sélectionnable individuellement', async ({
@@ -308,7 +309,7 @@ test.describe('Rapport groupé (batch)', () => {
     await verdonBatchReportPage
       .getByPlaceholder(/Rechercher une voie ou un secteur/i)
       .fill('Pichenibule');
-    await verdonBatchReportPage.getByText(/L2 \(6c, 40m\)/i).click();
+    await verdonBatchReportPage.getByText(/^L2 \(40m\)$/i).click();
 
     await expect(verdonBatchReportPage.getByText(/1 longueur sélectionnée/i)).toBeVisible();
   });

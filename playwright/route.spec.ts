@@ -5,9 +5,9 @@ test.describe('Page de détail d\'une route simple', () => {
     await expect(roseDesSablesPage.getByRole('heading', { name: /Rose des Sables/i })).toBeVisible();
   });
 
-  test('affiche la cotation et la longueur', async ({ roseDesSablesPage }) => {
-    await expect(roseDesSablesPage.getByText('7a')).toBeVisible();
+  test('affiche la longueur mais masque la cotation pour un utilisateur non connecté', async ({ roseDesSablesPage }) => {
     await expect(roseDesSablesPage.getByText('25m')).toBeVisible();
+    await expect(roseDesSablesPage.getByText('7a')).not.toBeVisible();
   });
 
   test('affiche les breadcrumbs', async ({ roseDesSablesPage }) => {
@@ -51,17 +51,17 @@ test.describe('Page de détail d\'une route avec rapports', () => {
 });
 
 test.describe('Page de détail d\'une route multi-longueurs', () => {
-  test('affiche la cotation maximale', async ({ pichenibulePage }) => {
-    await expect(pichenibulePage.locator('h1').getByText('6c')).toBeVisible();
+  test('masque la cotation maximale pour un utilisateur non connecté', async ({ pichenibulePage }) => {
+    await expect(pichenibulePage.locator('h1').getByText('6c')).not.toBeVisible();
   });
 
-  test('affiche la section longueurs', async ({ pichenibulePage }) => {
+  test('affiche la section longueurs sans les cotations', async ({ pichenibulePage }) => {
     await expect(pichenibulePage.getByText(/Longueurs/i)).toBeVisible();
 
-    // Check individual pitches are listed
-    await expect(pichenibulePage.getByRole('link', { name: /L1.*6b/i })).toBeVisible();
-    await expect(pichenibulePage.getByRole('link', { name: /L2.*6c/i })).toBeVisible();
-    await expect(pichenibulePage.getByRole('link', { name: /L3.*6a\+/i })).toBeVisible();
+    // Check individual pitches are listed by length, without cotations
+    await expect(pichenibulePage.getByRole('link', { name: /^L1 \(35m\)$/i })).toBeVisible();
+    await expect(pichenibulePage.getByRole('link', { name: /^L2 \(40m\)$/i })).toBeVisible();
+    await expect(pichenibulePage.getByRole('link', { name: /^L3 \(30m\)$/i })).toBeVisible();
   });
 
   test('affiche les rapports avec le numéro de longueur', async ({ pichenibulePage }) => {
@@ -81,7 +81,7 @@ test.describe('Page de détail d\'une route multi-longueurs', () => {
   });
 
   test('clic sur une longueur navigue vers le formulaire de rapport', async ({ pichenibulePage }) => {
-    await pichenibulePage.getByRole('link', { name: /L2.*6c/i }).click();
+    await pichenibulePage.getByRole('link', { name: /^L2 \(40m\)$/i }).click();
     await expect(pichenibulePage).toHaveURL(/\/crag\/[^/]+\/report\?pitchId=/);
   });
 });

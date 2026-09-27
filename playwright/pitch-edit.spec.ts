@@ -53,25 +53,26 @@ test.describe('Édition des pitches - Données manquantes', () => {
     await expect(voieSansInfo).toBeVisible();
   });
 
-  test('route simple sans données affiche "?" pour cotation et longueur', async ({ voieACompleterPage }) => {
-    // Should show "Cotation?" for missing cotation and "?m" for missing length in the header
+  test('route simple sans longueur affiche "?m" (cotation masquée pour un utilisateur non connecté)', async ({ voieACompleterPage }) => {
+    // Cotation is hidden entirely for a non-connected user; only the missing length shows as "?m"
     const header = voieACompleterPage.locator('h1');
-    await expect(header).toContainText('Cotation?');
+    await expect(header).not.toContainText('Cotation?');
     await expect(header).toContainText('?m');
   });
 
-  test('route multi-longueurs avec données partielles affiche "?" pour les valeurs manquantes', async ({ donneesPartiellesPage }) => {
-    // Should have 3 pitches, some with missing data
+  test('route multi-longueurs avec données partielles affiche "?m" pour les longueurs manquantes (cotations masquées)', async ({ donneesPartiellesPage }) => {
+    // Should have 3 pitches, some with missing data. Cotations are hidden for a
+    // non-connected user, so only the length (or "?m" when missing) is shown.
     await expect(donneesPartiellesPage.getByText(/Longueurs/i)).toBeVisible();
 
-    // L1 has cotation but no length: "L1 (6a, ?m)"
-    await expect(donneesPartiellesPage.getByRole('link', { name: /L1.*6a.*\?m/i })).toBeVisible();
+    // L1 has no length: "L1 (?m)"
+    await expect(donneesPartiellesPage.getByRole('link', { name: /^L1 \(\?m\)$/i })).toBeVisible();
 
-    // L2 has length but no cotation: "L2 (?, 25m)"
-    await expect(donneesPartiellesPage.getByRole('link', { name: /L2.*\?.*25m/i })).toBeVisible();
+    // L2 has a length: "L2 (25m)"
+    await expect(donneesPartiellesPage.getByRole('link', { name: /^L2 \(25m\)$/i })).toBeVisible();
 
-    // L3 has neither: "L3 (?, ?m)"
-    await expect(donneesPartiellesPage.getByRole('link', { name: /L3.*\?.*\?m/i })).toBeVisible();
+    // L3 has no length either: "L3 (?m)"
+    await expect(donneesPartiellesPage.getByRole('link', { name: /^L3 \(\?m\)$/i })).toBeVisible();
   });
 });
 
