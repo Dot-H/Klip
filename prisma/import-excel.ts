@@ -452,12 +452,14 @@ async function importSheet(
     if (conventionCell) currentConvention = parseConvention(conventionCell);
     if (sectorCell?.trim()) {
       const newSectorName = sectorCell.trim();
-      if (newSectorName !== currentSectorName) {
+      if (!/[a-zA-Z]/.test(newSectorName)) {
+        warn(`Sheet "${sheetName}": ignoring SECTOR cell "${newSectorName}" - no letters, looks like a stray typo, not a sector name`);
+      } else if (newSectorName !== currentSectorName) {
         sectorPrefixMap = new Map();
         currentRouteId = null;
+        currentSectorName = newSectorName;
+        currentSectorId = null;
       }
-      currentSectorName = newSectorName;
-      currentSectorId = null;
     }
 
     if (!routeCell?.trim()) continue;
