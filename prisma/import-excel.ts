@@ -92,6 +92,10 @@ const PAR_RE = /Par\s*\w+\s*:/i;
 // win the split and swallow the malformed tag into the route name.
 const LTAG_RE = /L\s*\d+\s*:?\s*(?=[3-9])/i;
 const GRADE_RE = /[3-9][a-c]\+?/i;
+// Broader marker used only to locate where the name ends and the grade/pitch text
+// begins - also recognizes aid-climbing grades ("A0", "A1"...) and an uncertain bare
+// digit ("6?", "8 ?") that aren't full grades on their own but still mark the split.
+const GRADE_MARKER_RE = /A[0-4]\+?|[3-9][a-c]\+?|[3-9]\s*\?/i;
 
 function extractBareGrade(text: string): string | null {
   const match = GRADE_RE.exec(text);
@@ -119,7 +123,7 @@ function parseRouteCell(
 
   const parMatch = PAR_RE.exec(cell);
   const ltagMatch = LTAG_RE.exec(cell);
-  const gradeMatch = GRADE_RE.exec(cell);
+  const gradeMatch = GRADE_MARKER_RE.exec(cell);
 
   const candidates = [
     parMatch ? { index: parMatch.index, mode: 'PAR' as const } : null,
@@ -223,6 +227,7 @@ interface Stats {
 interface NamedEntity {
   id: string;
   name: string | null;
+  number?: number;
 }
 
 async function upsertCrag(
@@ -353,7 +358,19 @@ async function upsertRoute(
   }
 
   const key = normalizeForMatch(route.name);
-  const match = routes.find((r) => normalizeForMatch(r.name ?? '') === key);
+  const candidates = routes.filter((r) => normalizeForMatch(r.name ?? '') === key);
+  // Some names (e.g. the "???" placeholder for a not-yet-named route) legitimately
+  // repeat within a sector for genuinely different climbs. A single name match is
+  // trusted as-is, but with several candidates the route number - the only other
+  // signal available - is required to pick the right one; otherwise the pitches of
+  // unrelated routes would get merged and their cotations silently cross-contaminated.
+  const match =
+    candidates.length <= 1
+      ? candidates[0]
+      : candidates.find((r) => r.number === route.number);
+  if (candidates.length > 1 && !match) {
+    warn(`Ambiguous route name "${route.name}" in sector ${sectorId} (${candidates.length} existing routes share it, none match number ${route.number}) - creating a new route instead of guessing`);
+  }
 
   let routeId: string;
   if (match) {
@@ -376,7 +393,7 @@ async function upsertRoute(
     } else {
       routeId = `dry-run-route:${sectorId}::${key}`;
     }
-    routes.push({ id: routeId, name: route.name });
+    routes.push({ id: routeId, name: route.name, number: route.number });
   }
 
   const offset = pitchOffsets.get(routeId) ?? 0;
