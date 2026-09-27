@@ -51,6 +51,37 @@ function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Strip a leading numbering prefix left over from an older, less careful import
+ * (e.g. "16 le menhirs", "a - sur le fil derisoir"). Digit prefixes are unambiguous
+ * (no real name is purely numeric) so the dash is optional; letter prefixes require
+ * an explicit dash so real short French words ("la", "le", "un"...) are left alone.
+ */
+function stripLeadingNumberPrefix(value: string): string {
+  const digitMatch = /^([0-9]+)\s*-?\s*/.exec(value);
+  if (digitMatch) return value.slice(digitMatch[0].length);
+  const letterMatch = /^([a-z]{1,3})\s*-\s*/.exec(value);
+  if (letterMatch) return value.slice(letterMatch[0].length);
+  return value;
+}
+
+/**
+ * Fuzzy key used to match a freshly parsed name against whatever is already stored
+ * in the database, tolerating accents, case, trailing punctuation and legacy
+ * numbering prefixes that earlier (less careful) imports left baked into the name.
+ */
+const COMBINING_DIACRITICS_RE = /[̀-ͯ]/g;
+
+function normalizeForMatch(value: string): string {
+  const base = value
+    .normalize('NFD')
+    .replace(COMBINING_DIACRITICS_RE, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+  return stripLeadingNumberPrefix(base).replace(/[.,;:!?']+$/g, '').trim();
+}
+
 // Numbering prefix at the start of a name region, e.g. "1 - ", "14 ", "A - ".
 // Requires the token to be followed by whitespace so real words (e.g. "L'Ombre") are left alone.
 const PREFIX_RE = /^([0-9]+|[A-Z]{1,3})\s*-?\s+(?=\S)/;
@@ -179,31 +210,44 @@ function parseRouteCell(
 
 interface Stats {
   cragsCreated: number;
+  cragsRenamed: number;
   sectorsCreated: number;
+  sectorsRenamed: number;
   routesCreated: number;
   routesUpdated: number;
+  routesRenamed: number;
   pitchesCreated: number;
   pitchesUpdated: number;
+}
+
+interface NamedEntity {
+  id: string;
+  name: string | null;
 }
 
 async function upsertCrag(
   name: string,
   convention: boolean | null,
-  cragMap: Map<string, string>,
+  allCrags: NamedEntity[],
   stats: Stats,
 ): Promise<string> {
-  const cached = cragMap.get(name.toLowerCase());
-  if (cached) return cached;
-
-  const existing = await prisma.crag.findFirst({
-    where: { name: { equals: name, mode: 'insensitive' } },
-  });
+  const key = normalizeForMatch(name);
+  const match = allCrags.find((c) => normalizeForMatch(c.name ?? '') === key);
 
   let id: string;
-  if (existing) {
-    id = existing.id;
-    if (apply && convention !== null && convention !== existing.convention) {
-      await prisma.crag.update({ where: { id }, data: { convention } });
+  if (match) {
+    id = match.id;
+    const data: { name?: string; convention?: boolean } = {};
+    if (match.name !== name) {
+      stats.cragsRenamed++;
+      data.name = name;
+      match.name = name;
+    }
+    if (convention !== null) {
+      data.convention = convention;
+    }
+    if (apply && Object.keys(data).length > 0) {
+      await prisma.crag.update({ where: { id }, data });
     }
   } else {
     stats.cragsCreated++;
@@ -211,40 +255,48 @@ async function upsertCrag(
       const created = await prisma.crag.create({ data: { name, convention } });
       id = created.id;
     } else {
-      id = `dry-run-crag:${name}`;
+      id = `dry-run-crag:${key}`;
     }
+    allCrags.push({ id, name });
   }
-  cragMap.set(name.toLowerCase(), id);
   return id;
 }
 
 async function upsertSector(
   cragId: string,
   name: string,
-  sectorMap: Map<string, string>,
+  sectorsByCrag: Map<string, NamedEntity[]>,
   stats: Stats,
 ): Promise<string> {
-  const key = `${cragId}::${name.toLowerCase()}`;
-  const cached = sectorMap.get(key);
-  if (cached) return cached;
+  let sectors = sectorsByCrag.get(cragId);
+  if (!sectors) {
+    sectors = await prisma.sector.findMany({ where: { cragId } });
+    sectorsByCrag.set(cragId, sectors);
+  }
 
-  const existing = await prisma.sector.findFirst({
-    where: { cragId, name: { equals: name, mode: 'insensitive' } },
-  });
+  const key = normalizeForMatch(name);
+  const match = sectors.find((s) => normalizeForMatch(s.name ?? '') === key);
 
   let id: string;
-  if (existing) {
-    id = existing.id;
+  if (match) {
+    id = match.id;
+    if (match.name !== name) {
+      stats.sectorsRenamed++;
+      if (apply) {
+        await prisma.sector.update({ where: { id }, data: { name } });
+      }
+      match.name = name;
+    }
   } else {
     stats.sectorsCreated++;
     if (apply) {
       const created = await prisma.sector.create({ data: { cragId, name } });
       id = created.id;
     } else {
-      id = `dry-run-sector:${key}`;
+      id = `dry-run-sector:${cragId}::${key}`;
     }
+    sectors.push({ id, name });
   }
-  sectorMap.set(key, id);
   return id;
 }
 
@@ -290,33 +342,41 @@ async function upsertRoute(
   sectorId: string,
   route: ParsedRoute,
   nbBolts: number | null,
-  routeMap: Map<string, string>,
+  routesBySector: Map<string, NamedEntity[]>,
   pitchOffsets: Map<string, number>,
   stats: Stats,
 ): Promise<string> {
-  const key = `${sectorId}::${route.name.toLowerCase()}`;
-  let routeId = routeMap.get(key);
+  let routes = routesBySector.get(sectorId);
+  if (!routes) {
+    routes = await prisma.route.findMany({ where: { sectorId } });
+    routesBySector.set(sectorId, routes);
+  }
 
-  if (!routeId) {
-    const existing = await prisma.route.findFirst({
-      where: { sectorId, name: { equals: route.name, mode: 'insensitive' } },
-    });
+  const key = normalizeForMatch(route.name);
+  const match = routes.find((r) => normalizeForMatch(r.name ?? '') === key);
 
-    if (existing) {
-      routeId = existing.id;
-      stats.routesUpdated++;
-    } else {
-      stats.routesCreated++;
+  let routeId: string;
+  if (match) {
+    routeId = match.id;
+    stats.routesUpdated++;
+    if (match.name !== route.name) {
+      stats.routesRenamed++;
       if (apply) {
-        const created = await prisma.route.create({
-          data: { sectorId, number: route.number, name: route.name },
-        });
-        routeId = created.id;
-      } else {
-        routeId = `dry-run-route:${key}`;
+        await prisma.route.update({ where: { id: routeId }, data: { name: route.name } });
       }
+      match.name = route.name;
     }
-    routeMap.set(key, routeId);
+  } else {
+    stats.routesCreated++;
+    if (apply) {
+      const created = await prisma.route.create({
+        data: { sectorId, number: route.number, name: route.name },
+      });
+      routeId = created.id;
+    } else {
+      routeId = `dry-run-route:${sectorId}::${key}`;
+    }
+    routes.push({ id: routeId, name: route.name });
   }
 
   const offset = pitchOffsets.get(routeId) ?? 0;
@@ -328,7 +388,9 @@ async function upsertRoute(
 async function importSheet(
   workbook: XLSX.WorkBook,
   sheetName: string,
-  cragMap: Map<string, string>,
+  allCrags: NamedEntity[],
+  sectorsByCrag: Map<string, NamedEntity[]>,
+  routesBySector: Map<string, NamedEntity[]>,
   stats: Stats,
 ): Promise<void> {
   console.log(`\nProcessing sheet: ${sheetName}`);
@@ -345,8 +407,6 @@ async function importSheet(
   let currentSectorId: string | null = null;
   let currentRouteId: string | null = null;
 
-  const sectorMap = new Map<string, string>();
-  const routeMap = new Map<string, string>();
   const pitchOffsets = new Map<string, number>();
   let sectorPrefixMap = new Map<string, string>();
   let warnedStraySite = false;
@@ -399,9 +459,9 @@ async function importSheet(
       continue;
     }
 
-    const cragId = await upsertCrag(currentSiteName, currentConvention, cragMap, stats);
+    const cragId = await upsertCrag(currentSiteName, currentConvention, allCrags, stats);
     if (!currentSectorId) {
-      currentSectorId = await upsertSector(cragId, currentSectorName, sectorMap, stats);
+      currentSectorId = await upsertSector(cragId, currentSectorName, sectorsByCrag, stats);
     }
 
     const { routes, prefixLabel, isContinuation } = parseRouteCell(routeCell, sectorPrefixMap);
@@ -424,7 +484,7 @@ async function importSheet(
         currentSectorId,
         route,
         nbBolts,
-        routeMap,
+        routesBySector,
         pitchOffsets,
         stats,
       );
@@ -444,26 +504,31 @@ async function main() {
   const workbook = XLSX.readFile(filePath);
   console.log(`Found ${workbook.SheetNames.length} sheets`);
 
-  const cragMap = new Map<string, string>();
+  const allCrags: NamedEntity[] = await prisma.crag.findMany();
+  const sectorsByCrag = new Map<string, NamedEntity[]>();
+  const routesBySector = new Map<string, NamedEntity[]>();
   const stats: Stats = {
     cragsCreated: 0,
+    cragsRenamed: 0,
     sectorsCreated: 0,
+    sectorsRenamed: 0,
     routesCreated: 0,
     routesUpdated: 0,
+    routesRenamed: 0,
     pitchesCreated: 0,
     pitchesUpdated: 0,
   };
 
   for (const sheetName of workbook.SheetNames) {
     if (sheetName === 'Sheet2') continue;
-    await importSheet(workbook, sheetName, cragMap, stats);
+    await importSheet(workbook, sheetName, allCrags, sectorsByCrag, routesBySector, stats);
   }
 
   console.log('\n=== Import Plan ===');
-  console.log(`Crags to create: ${stats.cragsCreated}`);
-  console.log(`Sectors to create: ${stats.sectorsCreated}`);
+  console.log(`Crags to create: ${stats.cragsCreated} (renamed: ${stats.cragsRenamed})`);
+  console.log(`Sectors to create: ${stats.sectorsCreated} (renamed: ${stats.sectorsRenamed})`);
   console.log(`Routes to create: ${stats.routesCreated}`);
-  console.log(`Routes matched/updated: ${stats.routesUpdated}`);
+  console.log(`Routes matched/updated: ${stats.routesUpdated} (renamed: ${stats.routesRenamed})`);
   console.log(`Pitches to create: ${stats.pitchesCreated}`);
   console.log(`Pitches to update: ${stats.pitchesUpdated}`);
 
