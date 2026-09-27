@@ -1,4 +1,4 @@
-import { compareGrades, getMaxCotation } from '../grades';
+import { compareGrades, formatCotations, getMaxCotation } from '../grades';
 
 describe('compareGrades', () => {
   describe('basic comparisons', () => {
@@ -126,5 +126,25 @@ describe('getMaxCotation', () => {
       { cotation: '6a+' },
     ];
     expect(getMaxCotation(pitches)).toBe('6c');
+  });
+});
+
+describe('formatCotations', () => {
+  it('joins the cotation of every pitch in order', () => {
+    const pitches = [{ cotation: '5c' }, { cotation: '4b' }];
+    expect(formatCotations(pitches)).toBe('5c,4b');
+  });
+
+  it('returns null for an empty pitch list', () => {
+    expect(formatCotations([])).toBeNull();
+  });
+
+  it('replaces missing cotations with "?"', () => {
+    const pitches = [{ cotation: '5c' }, { cotation: null }];
+    expect(formatCotations(pitches)).toBe('5c,?');
+  });
+
+  it('handles a single pitch', () => {
+    expect(formatCotations([{ cotation: '6a' }])).toBe('6a');
   });
 });

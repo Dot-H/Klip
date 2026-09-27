@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { SectorWithRoutes } from '~/lib/data';
-import { getMaxCotation } from '~/lib/grades';
+import { formatCotations } from '~/lib/grades';
 import { RouteAddButton } from './RouteAddButton';
 
 interface RouteListProps {
@@ -73,7 +73,7 @@ export function RouteList({ sector }: RouteListProps) {
               ? route.pitches.reduce((sum, p) => sum + (p.length ?? 0), 0)
               : null;
             const totalLength = route.length ?? computedLength;
-            const maxCotation = getMaxCotation(route.pitches);
+            const cotations = formatCotations(route.pitches);
             const allPitchesHaveCotation = route.pitches.every((p) => p.cotation != null);
 
             return (
@@ -95,7 +95,7 @@ export function RouteList({ sector }: RouteListProps) {
                           color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
                           sx={{ ml: 1 }}
                         >
-                          {maxCotation ?? 'Cotation?'}
+                          {cotations ?? 'Cotation?'}
                         </Typography>
                         <Typography
                           component="span"
