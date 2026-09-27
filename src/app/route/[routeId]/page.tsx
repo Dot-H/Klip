@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography, Stack, Paper, Divider } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { getRouteWithReports } from '~/lib/data';
+import { getRouteWithReports, getUserByEmail } from '~/lib/data';
 import { getMaxCotation } from '~/lib/grades';
 import { auth } from '~/lib/auth/server';
+import { canViewCotation } from '~/lib/roles';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { ReportCard } from '~/components/Report/ReportCard';
 import { LinkButton } from '~/components/common/LinkButton';
@@ -25,6 +26,10 @@ export default async function RoutePage({ params }: RoutePageProps) {
   }
 
   const currentUserEmail = session.data?.user?.email;
+  const currentUser = currentUserEmail
+    ? await getUserByEmail(currentUserEmail)
+    : null;
+  const showCotation = canViewCotation(currentUser?.role);
 
   const routeName = route.name
     ? `${route.number}. ${route.name}`
@@ -85,14 +90,16 @@ export default async function RoutePage({ params }: RoutePageProps) {
               sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
             >
               {routeName}
-              <Typography
-                component="span"
-                variant="h6"
-                color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
-                sx={{ ml: 1.5, fontWeight: 'normal' }}
-              >
-                {maxCotation ?? 'Cotation?'}
-              </Typography>
+              {showCotation && (
+                <Typography
+                  component="span"
+                  variant="h6"
+                  color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
+                  sx={{ ml: 1.5, fontWeight: 'normal' }}
+                >
+                  {maxCotation ?? 'Cotation?'}
+                </Typography>
+              )}
               <Typography
                 component="span"
                 variant="h6"
@@ -131,7 +138,8 @@ export default async function RoutePage({ params }: RoutePageProps) {
             {route.pitches.map((pitch, index) => {
               const cotation = pitch.cotation ?? '?';
               const length = pitch.length != null ? `${pitch.length}m` : '?m';
-              const hasMissing = !pitch.cotation || pitch.length == null;
+              const hasMissing =
+                (showCotation && !pitch.cotation) || pitch.length == null;
               return (
                 <Box key={pitch.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <LinkButton
@@ -140,7 +148,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
                     size="small"
                     color={hasMissing ? 'warning' : 'primary'}
                   >
-                    L{index + 1} ({cotation}, {length})
+                    L{index + 1} ({showCotation ? `${cotation}, ` : ''}{length})
                   </LinkButton>
                   <PitchEditButton pitch={pitch} pitchNumber={index + 1} />
                 </Box>

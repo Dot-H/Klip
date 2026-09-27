@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography, Chip, Stack } from '@mui/material';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
-import { getCragWithRoutes } from '~/lib/data';
+import { getCragWithRoutes, getUserByEmail } from '~/lib/data';
+import { auth } from '~/lib/auth/server';
+import { canViewCotation } from '~/lib/roles';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { RouteList } from '~/components/Route/RouteList';
 import { SectorAddButton } from '~/components/Sector/SectorAddButton';
@@ -13,11 +15,20 @@ interface CragPageProps {
 
 export default async function CragPage({ params }: CragPageProps) {
   const { cragId } = await params;
-  const crag = await getCragWithRoutes(cragId);
+  const [crag, session] = await Promise.all([
+    getCragWithRoutes(cragId),
+    auth.getSession(),
+  ]);
 
   if (!crag) {
     notFound();
   }
+
+  const currentUserEmail = session.data?.user?.email;
+  const currentUser = currentUserEmail
+    ? await getUserByEmail(currentUserEmail)
+    : null;
+  const showCotation = canViewCotation(currentUser?.role);
 
   const totalRoutes = crag.sectors.reduce((sum, s) => sum + s.routes.length, 0);
 
@@ -82,7 +93,7 @@ export default async function CragPage({ params }: CragPageProps) {
         </Box>
       ) : (
         crag.sectors.map((sector) => (
-          <RouteList key={sector.id} sector={sector} />
+          <RouteList key={sector.id} sector={sector} showCotation={showCotation} />
         ))
       )}
     </Box>

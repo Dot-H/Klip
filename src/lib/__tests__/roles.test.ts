@@ -1,4 +1,4 @@
-import { USER_ROLE_LABELS, type UserRole } from '../roles';
+import { USER_ROLE_LABELS, canViewCotation, type UserRole } from '../roles';
 
 describe('USER_ROLE_LABELS', () => {
   it('has labels for all three roles', () => {
@@ -37,5 +37,24 @@ describe('USER_ROLE_LABELS', () => {
     const roles: UserRole[] = ['ADMIN', 'ROUTE_SETTER', 'CONTRIBUTOR'];
     const labels = roles.map(role => USER_ROLE_LABELS[role]);
     expect(labels).toEqual(['Admin', 'Ouvreur', 'Contributeur']);
+  });
+});
+
+describe('canViewCotation', () => {
+  it('allows admins', () => {
+    expect(canViewCotation('ADMIN')).toBe(true);
+  });
+
+  it('allows route setters', () => {
+    expect(canViewCotation('ROUTE_SETTER')).toBe(true);
+  });
+
+  it('denies contributors', () => {
+    expect(canViewCotation('CONTRIBUTOR')).toBe(false);
+  });
+
+  it('denies non-connected users', () => {
+    expect(canViewCotation(null)).toBe(false);
+    expect(canViewCotation(undefined)).toBe(false);
   });
 });

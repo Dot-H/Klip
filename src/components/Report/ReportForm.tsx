@@ -50,13 +50,18 @@ interface ReportFormProps {
   initialSelectedPitchIds: string[];
   /** Where to go after a successful submit (the originating route or the crag). */
   returnTo: string;
+  /** Whether the current user is allowed to see route/pitch cotations. */
+  showCotation: boolean;
 }
 
 const routeLabel = (route: { number: number; name: string | null }) =>
   route.name ? `${route.number}. ${route.name}` : `Voie ${route.number}`;
 
-const pitchDetails = (pitch: BatchReportPitch) =>
-  [pitch.cotation, pitch.length != null ? `${pitch.length}m` : null]
+const pitchDetails = (pitch: BatchReportPitch, showCotation: boolean) =>
+  [
+    showCotation ? pitch.cotation : null,
+    pitch.length != null ? `${pitch.length}m` : null,
+  ]
     .filter(Boolean)
     .join(', ');
 
@@ -68,6 +73,7 @@ export function ReportForm({
   sectors,
   initialSelectedPitchIds,
   returnTo,
+  showCotation,
 }: ReportFormProps) {
   const router = useRouter();
   const session = authClient.useSession();
@@ -401,7 +407,7 @@ export function ReportForm({
                                 />
                               </ListItem>
                               {route.pitches.map((pitch, pitchIndex) => {
-                                const details = pitchDetails(pitch);
+                                const details = pitchDetails(pitch, showCotation);
                                 return renderPitchRow(
                                   pitch,
                                   `L${pitchIndex + 1}${details ? ` (${details})` : ''}`,

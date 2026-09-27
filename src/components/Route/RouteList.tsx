@@ -17,9 +17,10 @@ import { RouteAddButton } from './RouteAddButton';
 
 interface RouteListProps {
   sector: SectorWithRoutes;
+  showCotation: boolean;
 }
 
-export function RouteList({ sector }: RouteListProps) {
+export function RouteList({ sector, showCotation }: RouteListProps) {
   const suggestedNumber =
     Math.max(...sector.routes.map((r) => r.number), 0) + 1;
 
@@ -89,14 +90,16 @@ export function RouteList({ sector }: RouteListProps) {
                         {route.name
                           ? `${route.number}. ${route.name}`
                           : `Voie ${route.number}`}
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
-                          sx={{ ml: 1 }}
-                        >
-                          {cotations ?? 'Cotation?'}
-                        </Typography>
+                        {showCotation && (
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color={allPitchesHaveCotation ? 'text.secondary' : 'warning.main'}
+                            sx={{ ml: 1 }}
+                          >
+                            {cotations ?? 'Cotation?'}
+                          </Typography>
+                        )}
                         <Typography
                           component="span"
                           variant="body2"

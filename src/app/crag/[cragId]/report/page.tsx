@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography } from '@mui/material';
-import { getCragForBatchReport } from '~/lib/data';
+import { getCragForBatchReport, getUserByEmail } from '~/lib/data';
+import { auth } from '~/lib/auth/server';
+import { canViewCotation } from '~/lib/roles';
 import { Breadcrumbs } from '~/components/Navigation/Breadcrumbs';
 import { ReportForm } from '~/components/Report/ReportForm';
 
@@ -15,11 +17,20 @@ export default async function ReportPage({
 }: ReportPageProps) {
   const { cragId } = await params;
   const { routeId, pitchId } = await searchParams;
-  const crag = await getCragForBatchReport(cragId);
+  const [crag, session] = await Promise.all([
+    getCragForBatchReport(cragId),
+    auth.getSession(),
+  ]);
 
   if (!crag) {
     notFound();
   }
+
+  const currentUserEmail = session.data?.user?.email;
+  const currentUser = currentUserEmail
+    ? await getUserByEmail(currentUserEmail)
+    : null;
+  const showCotation = canViewCotation(currentUser?.role);
 
   // Pre-select the pitches behind the entry point: a whole route ("Nouveau
   // rapport") or a single pitch (a specific length). Anything that doesn't
@@ -87,6 +98,7 @@ export default async function ReportPage({
           sectors={crag.sectors}
           initialSelectedPitchIds={[...initialSelectedPitchIds]}
           returnTo={returnTo}
+          showCotation={showCotation}
         />
       )}
     </Box>
