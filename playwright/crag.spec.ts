@@ -27,12 +27,12 @@ test.describe('Page de détail d\'un crag', () => {
     await expect(buouxCragPage.getByText('Voie 1')).toBeVisible();
   });
 
-  test('affiche la cotation et longueur des routes', async ({ buouxCragPage }) => {
-    await expect(buouxCragPage.getByText('7a')).toBeVisible();
-    await expect(buouxCragPage.getByText('7b+')).toBeVisible();
-
+  test('affiche la longueur des routes mais masque la cotation pour un utilisateur non connecté', async ({ buouxCragPage }) => {
     await expect(buouxCragPage.getByText('25m')).toBeVisible();
     await expect(buouxCragPage.getByText('30m')).toBeVisible();
+
+    await expect(buouxCragPage.getByText('7a')).not.toBeVisible();
+    await expect(buouxCragPage.getByText('7b+')).not.toBeVisible();
   });
 
   test('navigation vers une route', async ({ buouxCragPage }) => {
